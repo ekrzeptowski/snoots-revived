@@ -13,7 +13,7 @@ import type {
 } from "../types";
 import type { BannedUser } from "../user/moderator-actioned/banned";
 import type { ModeratorActionedUser } from "../user/moderator-actioned/base";
-import type { SubredditData } from "./object";
+import type { SubredditData, SubredditFlair } from "./object";
 
 import { BaseControls } from "../base-controls";
 import { CommentListing } from "../comment/listing/listing";
@@ -56,7 +56,8 @@ export interface BanOptions {
 /** Extra options for submitting a post. */
 export interface TextPostOptions {
   /**
-   * Whether or not to send inbox replies for the new post (defaults to `true`).
+   * Whether or not to send inbox replies for the new post (defaults to
+   * `true`).
    *
    * If you want to change this later you can use
    * {@link Post.enableInboxReplies} and {@link Post.disableInboxReplies}.
@@ -79,8 +80,8 @@ export interface TextPostOptions {
 /** Extra options for submitting a link post. */
 export interface LinkPostOptions extends TextPostOptions {
   /**
-   * Whether or not to error if this link has been submitted before (defaults to
-   * `false`).
+   * Whether or not to error if this link has been submitted before (defaults
+   * to `false`).
    */
   unique?: boolean;
 }
@@ -565,6 +566,19 @@ export class SubredditControls extends BaseControls {
     };
     const context = { request, client: this.client };
     return new PostListing(fakeListingAfter(""), context);
+  }
+
+  /**
+   * Get the list of flair templates for a subreddit.
+   * @param subreddit
+   *
+   * @returns A promise that resolves to a list of flair templates.
+   */
+  async getLinkFlairTemplates(subreddit: string): Promise<SubredditFlair[]> {
+    const raw = await this.gateway.get<Data[]>(
+      `r/${subreddit}/api/link_flair_v2.json`
+    );
+    return raw.map((flair: Data) => fromRedditData(flair));
   }
 
   /**

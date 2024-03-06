@@ -109,13 +109,14 @@ export interface SubredditData extends ContentData {
   displayName: string;
 
   /**
-   * The name of the subreddit prefixed with `r/` (or `u/` for user subreddits).
+   * The name of the subreddit prefixed with `r/` (or `u/` for user
+   * subreddits).
    */
   displayNamePrefixed: string;
 
   /**
-   * The custom emoji size if 'Custom sized emojis' has been configured for this
-   * subreddit, or `undefined` if no custom size was set.
+   * The custom emoji size if 'Custom sized emojis' has been configured for
+   * this subreddit, or `undefined` if no custom size was set.
    */
   emojisCustomSize: Maybe<Size>;
 
@@ -141,8 +142,8 @@ export interface SubredditData extends ContentData {
   headerSize: Maybe<Size>;
 
   /**
-   * The text to display when hovering over {@link headerImg}, or `undefined` if
-   * no such title has been set.
+   * The text to display when hovering over {@link headerImg}, or `undefined`
+   * if no such title has been set.
    */
   headerTitle: Maybe<string>;
 
@@ -165,9 +166,8 @@ export interface SubredditData extends ContentData {
   // TODO: Document or remove SubredditData.lang
   // lang: string;
 
-  // TODO: Document or remove SubredditData.linkFlair*
-  // linkFlairEnabled: boolean;
-  // linkFlairPosition: "" | "left" | "right";
+  linkFlairEnabled: boolean;
+  linkFlairPosition: "" | "left" | "right";
 
   // TODO: Document or remove SubredditData.mobileBannerImage
   // mobileBannerImage: string;
@@ -245,8 +245,8 @@ export interface SubredditData extends ContentData {
   submitText: string;
 
   /**
-   * The custom submit text rendered as HTML, or `undefined` if no such text was
-   * configured.
+   * The custom submit text rendered as HTML, or `undefined` if no such text
+   * was configured.
    */
   submitTextHtml: Maybe<string>;
 
@@ -260,8 +260,8 @@ export interface SubredditData extends ContentData {
   subscribers: number;
 
   /**
-   * The suggested way to sort the comments, or `undefined` if no suggestion has
-   * been configured.
+   * The suggested way to sort the comments, or `undefined` if no suggestion
+   * has been configured.
    */
   // TODO:
   // suggestedCommentSort: Maybe<Sort>;
@@ -328,6 +328,22 @@ export interface SubredditData extends ContentData {
   // wls: number;
 }
 
+export interface SubredditFlair {
+  text: string;
+  cssClass: string;
+  id: string;
+  textEditable: boolean;
+  type: "text" | "richtext";
+  allowableContent: string;
+  textColor: "dark" | "light";
+  modOnly: boolean;
+  richtext?: {
+    e: "text";
+    t: string;
+  }[];
+  backgroundColor: string;
+}
+
 /** A single subreddit. */
 export class Subreddit extends Content implements SubredditData {
   accountsActiveIsFuzzed: boolean;
@@ -374,8 +390,8 @@ export class Subreddit extends Content implements SubredditData {
   // isEnrolledInNewModmail: boolean,
   // keyColor: string;
   // lang: string;
-  // linkFlairEnabled: boolean;
-  // linkFlairPosition: "" | "left" | "right";
+  linkFlairEnabled: boolean;
+  linkFlairPosition: "" | "left" | "right";
   // mobileBannerImage: string;
   // notificationLevel: Maybe<string>;
   originalContentTagEnabled: boolean;
@@ -474,8 +490,8 @@ export class Subreddit extends Content implements SubredditData {
     // this.isEnrolledInNewModmail = data.isEnrolledInNewModmail;
     // this.keyColor = data.keyColor;
     // this.lang = data.lang;
-    // this.linkFlairEnabled = data.linkFlairEnabled;
-    // this.linkFlairPosition = data.linkFlairPosition;
+    this.linkFlairEnabled = data.linkFlairEnabled;
+    this.linkFlairPosition = data.linkFlairPosition;
     // this.mobileBannerImage = data.mobileBannerImage;
     // this.notificationLevel = data.notificationLevel;
     this.originalContentTagEnabled = data.originalContentTagEnabled;
@@ -597,6 +613,10 @@ export class Subreddit extends Content implements SubredditData {
    */
   getControversialPosts(time: TimeRange = "all"): Listing<Post> {
     return this.controls.getControversialPosts(this.displayName, time);
+  }
+
+  getLinkFlairTemplates(): Promise<SubredditFlair[]> {
+    return this.controls.getLinkFlairTemplates(this.displayName);
   }
 
   /**
@@ -921,7 +941,8 @@ export class Subreddit extends Content implements SubredditData {
   /**
    * Mute a user in this subreddit.
    *
-   * This prevents the user from sending modmail to this subreddit for 72 hours.
+   * This prevents the user from sending modmail to this subreddit for 72
+   * hours.
    *
    * @param username The username of the user to mute.
    */

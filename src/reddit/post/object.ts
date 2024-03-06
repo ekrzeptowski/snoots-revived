@@ -148,7 +148,10 @@ export interface PostData extends LockableData {
   // linkFlairBackgroundColor: string;
   // linkFlairCssClass: Maybe<string>;
   // linkFlairRichtext: RichTextFlair[];
-  // linkFlairTemplateId: Maybe<string>;
+
+  /** The ID of the link flair template, or `undefined` if there is no flair. */
+  linkFlairTemplateId: Maybe<string>;
+
   // linkFlairText: Maybe<string>;
   // linkFlairTextColor: "dark" | "light";
   // linkFlairType: "text" | "richtext";
@@ -265,7 +268,7 @@ export class Post extends Lockable implements PostData {
   // linkFlairBackgroundColor: string;
   // linkFlairCssClass: Maybe<string>;
   // linkFlairRichtext: RichTextFlair[];
-  // linkFlairTemplateId: Maybe<string>;
+  linkFlairTemplateId: Maybe<string>;
   // linkFlairText: Maybe<string>;
   // linkFlairTextColor: "dark" | "light";
   // linkFlairType: "text" | "richtext";
@@ -325,7 +328,7 @@ export class Post extends Lockable implements PostData {
     // this.linkFlairBackgroundColor = data.linkFlairBackgroundColor;
     // this.linkFlairCssClass = data.linkFlairCssClass;
     // this.linkFlairRichtext = data.linkFlairRichtext;
-    // this.linkFlairTemplateId = data.linkFlairTemplateId;
+    this.linkFlairTemplateId = data.linkFlairTemplateId;
     // this.linkFlairText = data.linkFlairText;
     // this.linkFlairTextColor = data.linkFlairTextColor;
     // this.linkFlairType = data.linkFlairType;

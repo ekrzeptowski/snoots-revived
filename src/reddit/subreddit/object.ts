@@ -38,16 +38,32 @@ export interface SubredditData extends ContentData {
   /** Whether or not all posts on this subreddit will be marked as OC. */
   allOriginalContent: boolean;
 
-  // TODO: Document or remove SubredditData.allow*
-  // allowChatPostCreation: boolean,
-  // allowDiscovery: boolean,
-  // allowGalleries: boolean,
-  // allowImages: boolean,
-  // allowPolls: boolean,
-  // allowPredictions: boolean,
-  // allowPredictionsTournament: boolean,
-  // allowVideogifs: boolean,
-  // allowVideos: boolean,
+  /** Whether or not users can create chat posts in this subreddit. */
+  allowChatPostCreation: boolean;
+
+  /** Whether or not this subreddit allows discovery. */
+  allowDiscovery: boolean;
+
+  /** Whether or not this subreddit allows galleries. */
+  allowGalleries: boolean;
+
+  /** Whether or not this subreddit allows images. */
+  allowImages: boolean;
+
+  /** Whether or not this subreddit allows polls. */
+  allowPolls: boolean;
+
+  /** Whether or not this subreddit allows predictions. */
+  allowPredictions: boolean;
+
+  /** Whether or not this subreddit allows predictions tournaments. */
+  allowPredictionsTournament: boolean;
+
+  /** Whether or not this subreddit allows videogifs. */
+  allowVideogifs: boolean;
+
+  /** Whether or not this subreddit allows videos. */
+  allowVideos: boolean;
 
   /** The hex color to display behind the banner. */
   bannerBackgroundColor: string;
@@ -350,15 +366,15 @@ export class Subreddit extends Content implements SubredditData {
   activeUserCount: number;
   // advertiserCategory: Maybe<string>;
   allOriginalContent: boolean;
-  // allowChatPostCreation: boolean,
-  // allowDiscovery: boolean,
-  // allowGalleries: boolean,
-  // allowImages: boolean,
-  // allowPolls: boolean,
-  // allowPredictions: boolean,
-  // allowPredictionsTournament: boolean,
-  // allowVideogifs: boolean,
-  // allowVideos: boolean,
+  allowChatPostCreation: boolean;
+  allowDiscovery: boolean;
+  allowGalleries: boolean;
+  allowImages: boolean;
+  allowPolls: boolean;
+  allowPredictions: boolean;
+  allowPredictionsTournament: boolean;
+  allowVideogifs: boolean;
+  allowVideos: boolean;
   bannerBackgroundColor: string;
   bannerBackgroundImage: string;
   bannerImg: string;
@@ -450,15 +466,15 @@ export class Subreddit extends Content implements SubredditData {
     this.activeUserCount = data.activeUserCount;
     // this.advertiserCategory = data.advertiserCategory;
     this.allOriginalContent = data.allOriginalContent;
-    // this.allowChatPostCreation = data.allowChatPostCreation;
-    // this.allowDiscovery = data.allowDiscovery;
-    // this.allowGalleries = data.allowGalleries;
-    // this.allowImages = data.allowImages;
-    // this.allowPolls = data.allowPolls;
-    // this.allowPredictions = data.allowPredictions;
-    // this.allowPredictionsTournament = data.allowPredictionsTournament;
-    // this.allowVideogifs = data.allowVideogifs;
-    // this.allowVideos = data.allowVideos;
+    this.allowChatPostCreation = data.allowChatPostCreation;
+    this.allowDiscovery = data.allowDiscovery;
+    this.allowGalleries = data.allowGalleries;
+    this.allowImages = data.allowImages;
+    this.allowPolls = data.allowPolls;
+    this.allowPredictions = data.allowPredictions;
+    this.allowPredictionsTournament = data.allowPredictionsTournament;
+    this.allowVideogifs = data.allowVideogifs;
+    this.allowVideos = data.allowVideos;
     this.bannerBackgroundColor = data.bannerBackgroundColor;
     this.bannerBackgroundImage = data.bannerBackgroundImage;
     this.bannerImg = data.bannerImg;

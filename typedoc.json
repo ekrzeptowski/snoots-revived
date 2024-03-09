@@ -17,13 +17,11 @@
     "Method",
     "Module",
     "Namespace",
-    "ObjectLiteral",
     "Parameter",
     "Property",
     "Reference",
     "SetSignature",
     "TypeAlias",
-    "TypeLiteral",
     "TypeParameter",
     "Variable"
   ],

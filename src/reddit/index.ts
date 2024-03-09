@@ -26,7 +26,7 @@ export type {
 export { SubredditControls } from "./subreddit/controls";
 export type { SubredditData } from "./subreddit/object";
 export { Subreddit } from "./subreddit/object";
-export type { SubredditType } from "./subreddit/types";
+export type { SubredditFlair, SubredditType } from "./subreddit/types";
 export type { SearchSort, SearchSyntax, Size, TimeRange } from "./types";
 export { BaseUserControls } from "./user/base/controls";
 export type { UserData } from "./user/base/object";

@@ -13,7 +13,7 @@ import type {
   SubredditControls,
   TextPostOptions,
 } from "./controls";
-import type { SubredditType } from "./types";
+import type { SubredditFlair, SubredditType } from "./types";
 
 import { Content } from "../content";
 
@@ -182,7 +182,10 @@ export interface SubredditData extends ContentData {
   // TODO: Document or remove SubredditData.lang
   // lang: string;
 
+  /** Whether or not link flairs are enabled in this subreddit. */
   linkFlairEnabled: boolean;
+
+  /** The position of the link flairs in this subreddit. */
   linkFlairPosition: "" | "left" | "right";
 
   // TODO: Document or remove SubredditData.mobileBannerImage
@@ -342,22 +345,6 @@ export interface SubredditData extends ContentData {
 
   // TODO: Document or remove SubredditData.wls
   // wls: number;
-}
-
-export interface SubredditFlair {
-  text: string;
-  cssClass: string;
-  id: string;
-  textEditable: boolean;
-  type: "text" | "richtext";
-  allowableContent: string;
-  textColor: "dark" | "light";
-  modOnly: boolean;
-  richtext?: {
-    e: "text";
-    t: string;
-  }[];
-  backgroundColor: string;
 }
 
 /** A single subreddit. */
@@ -631,6 +618,10 @@ export class Subreddit extends Content implements SubredditData {
     return this.controls.getControversialPosts(this.displayName, time);
   }
 
+  /**
+   * Get link flair templates for this subreddit.
+   * @returns A promise that resolves to an array of link flair templates.
+   */
   getLinkFlairTemplates(): Promise<SubredditFlair[]> {
     return this.controls.getLinkFlairTemplates(this.displayName);
   }

@@ -13,7 +13,8 @@ import type {
 } from "../types";
 import type { BannedUser } from "../user/moderator-actioned/banned";
 import type { ModeratorActionedUser } from "../user/moderator-actioned/base";
-import type { SubredditData, SubredditFlair } from "./object";
+import type { SubredditData } from "./object";
+import type { SubredditFlair } from "./types";
 
 import { BaseControls } from "../base-controls";
 import { CommentListing } from "../comment/listing/listing";

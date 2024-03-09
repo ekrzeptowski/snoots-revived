@@ -17,6 +17,7 @@ export type FileDetails = {
   mediaId: string;
 };
 
+/** The type of subreddit flair. */
 export interface SubredditFlair {
   text: string;
   cssClass: string;

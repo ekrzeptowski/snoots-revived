@@ -571,7 +571,7 @@ export class SubredditControls extends BaseControls {
 
   /**
    * Get the list of flair templates for a subreddit.
-   * @param subreddit
+   * @param subreddit The name of the subreddit.
    *
    * @returns A promise that resolves to a list of flair templates.
    */

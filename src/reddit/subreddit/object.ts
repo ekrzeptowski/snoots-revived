@@ -821,6 +821,34 @@ export class Subreddit extends Content implements SubredditData {
   }
 
   /**
+   * Submit an image post to this subreddit.
+   *
+   * @param title The title of the post.
+   * @param imageFile The image to post.
+   * @param imageFileName The name of the image file.
+   * @param noWebsockets Whether to disable websockets for the image.
+   * @param options Any extra options.
+   *
+   * @returns A promise that resolves to the ID of the new post or undefined
+   */
+  async postImage(
+    title: string,
+    imageFile: Blob,
+    imageFileName: string,
+    noWebsockets = false,
+    options: LinkPostOptions = {}
+  ): Promise<string | undefined> {
+    return this.controls.postImage(
+      this.displayName,
+      title,
+      imageFile,
+      imageFileName,
+      noWebsockets,
+      options
+    );
+  }
+
+  /**
    * Submit a link post to this subreddit.
    *
    * @param title The title of the post.

@@ -8,7 +8,7 @@ import type {
   SomeResponse,
 } from "./types";
 
-import got from "got";
+import got from "got-cjs";
 
 import { makeDebug } from "../helper/debug";
 

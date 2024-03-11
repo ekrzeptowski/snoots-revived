@@ -1392,7 +1392,9 @@ export class SubredditControls extends BaseControls {
         submitResponse = await this.gateway.post("api/submit", request);
     }
     debugPost("Submit response %o", submitResponse);
-    return formatId(submitResponse.id as string);
+    return (
+      (submitResponse.id as string) && formatId(submitResponse.id as string)
+    );
   }
 
   /** @internal */

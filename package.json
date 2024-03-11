@@ -1,6 +1,6 @@
 {
   "name": "snoots-revived",
-  "version": "1.0.0-dev.29",
+  "version": "1.0.0-dev.1",
   "description": "A modern, fully-featured, strongly-typed reddit api.",
   "module": "dist/index.mjs",
   "main": "dist/index.js",

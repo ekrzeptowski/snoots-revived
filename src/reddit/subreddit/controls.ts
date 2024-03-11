@@ -32,7 +32,13 @@ import { PostOrCommentListing } from "../post-or-comment/listing";
 import { BannedUserListing } from "../user/moderator-actioned/banned";
 import { ModeratorActionedUserListing } from "../user/moderator-actioned/base";
 import { Moderator } from "../user/moderator-actioned/moderator";
-import { assertKind, fromRedditData, isBrowser, webSocket } from "../util";
+import {
+  assertKind,
+  formatId,
+  fromRedditData,
+  isBrowser,
+  webSocket,
+} from "../util";
 import { SubredditListing } from "./listing";
 import { Subreddit } from "./object";
 
@@ -97,6 +103,27 @@ export interface LinkPostOptions extends TextPostOptions {
    * to `false`).
    */
   unique?: boolean;
+}
+
+/** Options for submitting a gallery post. */
+export interface GalleryPostOptions {
+  /** An array of media files to upload. */
+  gallery: {
+    /** The media file to upload. */
+    file: Blob | File;
+    /** File name. */
+    fileName: string;
+    /** A caption for the embedded file to be used on gallery items. */
+    caption?: string;
+    /** An external URL to be used on gallery items. */
+    outboundUrl?: string;
+  }[];
+  /** Extra options for the gallery post. */
+  options: LinkPostOptions;
+  /** The title of the gallery post. */
+  subreddit: string;
+  /** The title of the gallery post. */
+  title: string;
 }
 
 /** Extra options for media uploads. */
@@ -170,7 +197,7 @@ export interface UploadResponse {
   };
 }
 
-type PostTypes = "self" | "link" | "crosspost" | "image";
+type PostTypes = "self" | "link" | "crosspost" | "image" | "gallery";
 
 interface PostOptions {
   kind: PostTypes;
@@ -185,6 +212,11 @@ interface PostOptions {
   // This only applies to link and cross posts
   resubmit: boolean;
   websocketUrl?: string;
+  items?: {
+    caption?: string;
+    mediaId: string;
+    outboundUrl?: string;
+  }[];
 }
 
 /**
@@ -1010,6 +1042,61 @@ export class SubredditControls extends BaseControls {
     }
   }
 
+  /**
+   * Submit a gallery post.
+   * @param params Options for submitting a gallery post.
+   * @returns A promise that resolves to the ID of the new post.
+   */
+  async postGallery({
+    gallery,
+    title,
+    subreddit,
+    options,
+  }: GalleryPostOptions): Promise<string> {
+    const items = await Promise.all(
+      gallery.map(async item => {
+        let mediaId;
+        try {
+          const image =
+            item.file instanceof MediaImg
+              ? item.file
+              : await this.uploadMedia({
+                  file: item.file,
+                  name: item.fileName,
+                  type: "img",
+                  caption: item.caption,
+                  outboundUrl: item.outboundUrl,
+                });
+          debug("Image upload response %o", image);
+          mediaId = image?.mediaId;
+        } catch (error) {
+          debug("Failed to upload image: %o", error);
+          throw new Error(
+            `Failed to upload image: ${(error as Error).message}`
+          );
+        }
+        return {
+          caption: item.caption,
+          outboundUrl: item.outboundUrl,
+          mediaId: mediaId,
+        };
+      })
+    );
+    const filteredItems = items.filter(
+      item => item.mediaId
+    ) as PostOptions["items"];
+    return this.post(subreddit, {
+      kind: "gallery",
+      items: filteredItems,
+      title: title,
+      sendReplies: options.sendReplies ?? false,
+      resubmit: !options.unique,
+      captcha: options.captcha,
+      nsfw: options.nsfw ?? false,
+      spoiler: options.spoiler ?? false,
+    });
+  }
+
   /** @internal */
   async uploadMedia({
     file,
@@ -1212,6 +1299,17 @@ export class SubredditControls extends BaseControls {
       request.captcha = options.captcha.response;
       request.iden = options.captcha.iden;
     }
+    if (options.kind === "gallery" && options.items) {
+      request.items = options.items.map(item => {
+        return {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          media_id: item.mediaId,
+          caption: item.caption,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          outbound_url: item.outboundUrl,
+        };
+      });
+    }
 
     return request;
   }
@@ -1276,9 +1374,25 @@ export class SubredditControls extends BaseControls {
   }
 
   private async handleRegularPost(request: Data): Promise<string> {
-    const submitResponse: Data = await this.gateway.post("api/submit", request);
+    let submitResponse: Data;
+    switch (request.kind) {
+      case "gallery":
+        submitResponse = await this.gateway.postJson(
+          "api/submit_gallery_post.json",
+          request
+        );
+        break;
+      case "poll":
+        submitResponse = await this.gateway.postJson(
+          "api/submit_poll_post",
+          request
+        );
+        break;
+      default:
+        submitResponse = await this.gateway.post("api/submit", request);
+    }
     debugPost("Submit response %o", submitResponse);
-    return submitResponse.id as string;
+    return formatId(submitResponse.id as string);
   }
 
   /** @internal */

@@ -9,6 +9,7 @@ import type { ModeratorActionedUser } from "../user/moderator-actioned/base";
 import type { Moderator } from "../user/moderator-actioned/moderator";
 import type {
   BanOptions,
+  GalleryPostOptions,
   LinkPostOptions,
   SubredditControls,
   TextPostOptions,
@@ -846,6 +847,24 @@ export class Subreddit extends Content implements SubredditData {
       noWebsockets,
       options
     );
+  }
+
+  /**
+   * Submit a gallery post.
+   * @param params Options for submitting a gallery post.
+   * @returns A promise that resolves to the ID of the new post.
+   */
+  async postGallery({
+    gallery,
+    title,
+    options,
+  }: Omit<GalleryPostOptions, "subreddit">): Promise<string> {
+    return this.controls.postGallery({
+      gallery,
+      title,
+      subreddit: this.displayName,
+      options,
+    });
   }
 
   /**

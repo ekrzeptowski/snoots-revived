@@ -54,3 +54,10 @@ export const isBrowser = typeof self === "object";
 export const webSocket: typeof self.WebSocket = isBrowser
   ? self.WebSocket
   : (ws as never);
+
+/**
+ * Format a Reddit ID to remove the prefix.
+ * @param id
+ * @returns The formatted ID.
+ */
+export const formatId = (id: string) => id.replace(/^t\d_/, "");

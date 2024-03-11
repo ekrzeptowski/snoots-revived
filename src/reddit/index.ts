@@ -20,6 +20,7 @@ export { Replyable } from "./replyable/object";
 export type {
   BanOptions,
   Captcha,
+  GalleryPostOptions,
   LinkPostOptions,
   TextPostOptions,
 } from "./subreddit/controls";

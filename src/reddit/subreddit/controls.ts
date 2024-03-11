@@ -14,19 +14,37 @@ import type {
 import type { BannedUser } from "../user/moderator-actioned/banned";
 import type { ModeratorActionedUser } from "../user/moderator-actioned/base";
 import type { SubredditData } from "./object";
-import type { SubredditFlair } from "./types";
+import type { FileDetails, SubredditFlair } from "./types";
 
+import * as fs from "fs";
+import { blob } from "node:stream/consumers";
+import path from "path";
+import stream from "stream";
+
+import { makeDebug } from "../../helper/debug";
 import { BaseControls } from "../base-controls";
 import { CommentListing } from "../comment/listing/listing";
+import { mediaTypes, mimeTypes, submissionIdRegex } from "../const";
 import { fakeListingAfter } from "../listing/util";
+import { MediaFile, MediaGif, MediaImg, MediaVideo } from "../mediafile/object";
 import { PostListing } from "../post/listing";
 import { PostOrCommentListing } from "../post-or-comment/listing";
 import { BannedUserListing } from "../user/moderator-actioned/banned";
 import { ModeratorActionedUserListing } from "../user/moderator-actioned/base";
 import { Moderator } from "../user/moderator-actioned/moderator";
-import { assertKind, fromRedditData } from "../util";
+import {
+  assertKind,
+  formatId,
+  fromRedditData,
+  isBrowser,
+  webSocket,
+} from "../util";
 import { SubredditListing } from "./listing";
 import { Subreddit } from "./object";
+
+const debug = makeDebug("controls:subreddit");
+const debugPost = makeDebug("controls:subreddit:post");
+const debugUpload = makeDebug("controls:subreddit:upload");
 
 /** A single captcha identifier and response. */
 export interface Captcha {
@@ -87,7 +105,107 @@ export interface LinkPostOptions extends TextPostOptions {
   unique?: boolean;
 }
 
-type PostTypes = "self" | "link" | "crosspost";
+/** Options for submitting a gallery post. */
+export interface GalleryPostOptions {
+  /** An array of media files to upload. */
+  gallery: {
+    /** The media file to upload. */
+    file: Blob | File;
+    /** File name. */
+    fileName: string;
+    /** A caption for the embedded file to be used on gallery items. */
+    caption?: string;
+    /** An external URL to be used on gallery items. */
+    outboundUrl?: string;
+  }[];
+  /** Extra options for the gallery post. */
+  options: LinkPostOptions;
+  /** The title of the gallery post. */
+  subreddit: string;
+  /** The title of the gallery post. */
+  title: string;
+}
+
+/** Extra options for media uploads. */
+export interface UploadMediaOptions {
+  /**
+   * The media file to upload. This should either be the path to the file (as a
+   * `string`), or a
+   * [stream.Readable](https://nodejs.org/api/stream.html#stream_class_stream_readable),
+   * or a [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob),
+   * or a [File](https://developer.mozilla.org/en-US/docs/Web/API/File) in environments where
+   * the filesystem is unavailable (e.g. browsers).
+   */
+  file: string | stream.Readable | Blob | File;
+  /**
+   * The name that the file should have. Required when it cannot get directly
+   * extracted from the provided file (e.g ReadableStream, Blob).
+   */
+  name?: string;
+  /**
+   * Determines the media file type. This should be one of `img, video, gif`.
+   */
+  type?: "img" | "video" | "gif";
+  /**
+   * A caption for the embedded file to be used on selfposts bodies and gallery items.
+   * @desc **NOTE**: Captions on gallery items must be 180 characters or less.
+   */
+  caption?: string;
+  /** An external URL to be used on gallery items. */
+  outboundUrl?: string;
+  /**
+   * If `true`, the file won't get uploaded, and this method will return
+   * `null`. Useful if you only want to validate the parameters before actually
+   * uploading the file.
+   */
+  validateOnly?: boolean;
+}
+
+export interface UploadInlineMediaOptions extends UploadMediaOptions {
+  type: "img" | "video" | "gif";
+}
+
+/** Media types. */
+export interface MediaType {
+  readonly img: MediaImg;
+  readonly video: MediaVideo;
+  readonly gif: MediaGif;
+}
+
+/** The response from uploading a media file. */
+export interface UploadResponse {
+  args: {
+    /** @example '//reddit-uploaded-video.s3-accelerate.amazonaws.com' */
+    action: string;
+    /** Headers */
+    fields: {
+      name: string;
+      value: string;
+    }[];
+  };
+  asset: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    asset_id: string;
+    payload: {
+      filepath: string;
+    };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    processing_state: string;
+    /** @example 'wss://ws-0ffbcc476ebd6c972.wss.redditmedia.com/<asset_id>?m=<random-base64-string>' */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    websocket_url: string;
+  };
+}
+
+type PostTypes =
+  | "self"
+  | "link"
+  | "crosspost"
+  | "image"
+  | "gallery"
+  | "video"
+  | "videogif";
+
 interface PostOptions {
   kind: PostTypes;
   title: string;
@@ -100,6 +218,13 @@ interface PostOptions {
   spoiler: boolean;
   // This only applies to link and cross posts
   resubmit: boolean;
+  websocketUrl?: string;
+  videoPosterUrl?: string;
+  items?: {
+    caption?: string;
+    mediaId: string;
+    outboundUrl?: string;
+  }[];
 }
 
 /**
@@ -872,6 +997,307 @@ export class SubredditControls extends BaseControls {
   }
 
   /**
+   * Submit an image post.
+   * @param subreddit The subreddit to submit the post to.
+   * @param title The title of the post.
+   * @param imageFile The image file to post.
+   * @param imageFileName The name of the image file.
+   * @param noWebsockets Whether to disable websockets for the image.
+   * @param options Any extra options.
+   *
+   * @returns A promise that resolves to the ID of the new post or undefined
+   */
+  async postImage(
+    subreddit: string,
+    title: string,
+    imageFile: Blob,
+    imageFileName: string,
+    noWebsockets = false,
+    options: LinkPostOptions = {}
+  ): Promise<string | undefined> {
+    let url, websocketUrl;
+    try {
+      const image =
+        imageFile instanceof MediaImg
+          ? imageFile
+          : await this.uploadMedia({
+              file: imageFile,
+              name: imageFileName,
+              type: "img",
+            });
+      debug("Image upload response %o", image);
+      url = image?.fileUrl;
+      websocketUrl = image?.websocketUrl;
+    } catch (error) {
+      debug("Failed to upload image: %o", error);
+      throw new Error(`Failed to upload image: ${(error as Error).message}`);
+    }
+    try {
+      return this.post(subreddit, {
+        title,
+        kind: "image",
+        url,
+        websocketUrl: noWebsockets ? undefined : websocketUrl,
+        sendReplies: options.sendReplies ?? false,
+        resubmit: !options.unique,
+        captcha: options.captcha,
+        nsfw: options.nsfw ?? false,
+        spoiler: options.spoiler ?? false,
+      });
+    } catch (error) {
+      debug("Failed to post image: %o", error);
+      throw new Error(`Failed to post image: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Submit a video post.
+   * @param subreddit The subreddit to submit the post to.
+   * @param title The title of the post.
+   * @param videoFile The video file to post.
+   * @param videoFileName The name of the video file.
+   * @param thumbnailFile The thumbnail file to use.
+   * @param thumbnailFileName The name of the thumbnail file.
+   * @param videoGif Whether the video is a gif.
+   * @param noWebsockets Whether to disable websockets for the video.
+   * @param options Any extra options.
+   *
+   * @returns A promise that resolves to the ID of the new post or undefined
+   */
+  async postVideo(
+    subreddit: string,
+    title: string,
+    videoFile: Blob,
+    videoFileName: string,
+    thumbnailFile: Blob,
+    thumbnailFileName: string,
+    videoGif = false,
+    noWebsockets = false,
+    options: LinkPostOptions = {}
+  ): Promise<string | undefined> {
+    let url, videoPosterUrl, websocketUrl;
+    const kind = videoGif ? "videogif" : "video";
+
+    try {
+      const video =
+        videoFile instanceof MediaVideo
+          ? videoFile
+          : await this.uploadMedia({
+              file: videoFile,
+              name: videoFileName,
+              type: videoGif ? "gif" : "video",
+            });
+      debug("Video upload response %o", video);
+      url = video?.fileUrl;
+      websocketUrl = video?.websocketUrl;
+    } catch (error) {
+      debug("Failed to upload video: %o", error);
+      throw new Error(`Failed to upload video: ${(error as Error).message}`);
+    }
+    try {
+      const thumbnail =
+        thumbnailFile instanceof MediaImg
+          ? thumbnailFile
+          : await this.uploadMedia({
+              file: thumbnailFile,
+              name: thumbnailFileName,
+              type: "img",
+            });
+      debug("Thumbnail upload response %o", thumbnail);
+      videoPosterUrl = thumbnail?.fileUrl;
+    } catch (error) {
+      debug("Failed to upload thumbnail: %o", error);
+      throw new Error(
+        `Failed to upload thumbnail: ${(error as Error).message}`
+      );
+    }
+
+    return this.post(subreddit, {
+      title,
+      kind,
+      url,
+      videoPosterUrl,
+      websocketUrl: noWebsockets ? undefined : websocketUrl,
+      sendReplies: options.sendReplies ?? false,
+      resubmit: !options.unique,
+      captcha: options.captcha,
+      nsfw: options.nsfw ?? false,
+      spoiler: options.spoiler ?? false,
+    });
+  }
+
+  /**
+   * Submit a gallery post.
+   * @param params Options for submitting a gallery post.
+   * @returns A promise that resolves to the ID of the new post.
+   */
+  async postGallery({
+    gallery,
+    title,
+    subreddit,
+    options,
+  }: GalleryPostOptions): Promise<string> {
+    const items = await Promise.all(
+      gallery.map(async item => {
+        let mediaId;
+        try {
+          const image =
+            item.file instanceof MediaImg
+              ? item.file
+              : await this.uploadMedia({
+                  file: item.file,
+                  name: item.fileName,
+                  type: "img",
+                  caption: item.caption,
+                  outboundUrl: item.outboundUrl,
+                });
+          debug("Image upload response %o", image);
+          mediaId = image?.mediaId;
+        } catch (error) {
+          debug("Failed to upload image: %o", error);
+          throw new Error(
+            `Failed to upload image: ${(error as Error).message}`
+          );
+        }
+        return {
+          caption: item.caption,
+          outboundUrl: item.outboundUrl,
+          mediaId: mediaId,
+        };
+      })
+    );
+    const filteredItems = items.filter(
+      item => item.mediaId
+    ) as PostOptions["items"];
+    return this.post(subreddit, {
+      kind: "gallery",
+      items: filteredItems,
+      title: title,
+      sendReplies: options.sendReplies ?? false,
+      resubmit: !options.unique,
+      captcha: options.captcha,
+      nsfw: options.nsfw ?? false,
+      spoiler: options.spoiler ?? false,
+    });
+  }
+
+  /** @internal */
+  async uploadMedia({
+    file,
+    name,
+    type,
+    caption,
+    outboundUrl,
+    validateOnly = false,
+  }: UploadMediaOptions) {
+    this.validateFile(file, type);
+    if (validateOnly) {
+      return;
+    }
+    const parsedFile =
+      typeof file === "string" ? fs && fs.createReadStream(file) : file;
+    const fileName =
+      typeof file === "string"
+        ? path.basename(file)
+        : (file as { name?: string }).name || name;
+    const uploadResponse = (await this.getUploadResponse(
+      parsedFile,
+      type,
+      fileName
+    )) as UploadResponse;
+
+    debugUpload("Upload response %o", uploadResponse);
+    const uploadURL = "https:" + uploadResponse.args.action;
+    debugUpload("Upload URL %o", uploadURL);
+    const fileDetails: FileDetails = {
+      fileUrl: uploadURL + "/" + uploadResponse.asset.asset_id,
+      mediaId: uploadResponse.asset.asset_id,
+      websocketUrl: uploadResponse.asset.websocket_url,
+      caption,
+      outboundUrl,
+    };
+    debugUpload("File details %o", fileDetails);
+    const formData = new FormData();
+    for (const item of uploadResponse.args.fields) {
+      formData.append(item.name, item.value);
+    }
+    formData.set(
+      "file",
+      parsedFile instanceof stream.Readable
+        ? ((await blob(parsedFile)) as Blob)
+        : parsedFile,
+      fileName
+    );
+    debugUpload("Form data %o", formData);
+    const response = isBrowser
+      ? await fetch(uploadURL, {
+          method: "post",
+          mode: "no-cors",
+          body: formData as never,
+        })
+      : await this.gateway.postUpload(uploadURL, formData);
+    debugUpload("Upload response %o", response);
+    return this.createMedia(fileDetails, type);
+  }
+
+  private validateFile(file: unknown, type?: string) {
+    if (isBrowser && !fetch) {
+      throw new Error("Your browser doesn\\'t support \\'no-cors\\' requests");
+    }
+    if (isBrowser && typeof file === "string") {
+      throw new Error("File cannot be a string in the browser");
+    }
+    if (
+      typeof file !== "string" &&
+      !(stream && file instanceof stream.Readable) &&
+      !(Blob && file instanceof Blob)
+    ) {
+      throw new Error(
+        "'options.file' must be one of: 'string', 'stream.Readable', 'Blob', or a 'File'"
+      );
+    }
+    debugUpload("Validated file %o", { file, type });
+  }
+
+  private async getUploadResponse(
+    file: Blob | stream.Readable,
+    type: UploadMediaOptions["type"],
+    fileName?: string
+  ) {
+    if (!fileName) {
+      throw new Error("File name is required");
+    }
+    const fileExtension = path.extname(fileName).replace(".", "") || "jpeg";
+    const mimetype =
+      Blob && file instanceof Blob
+        ? file.type || mimeTypes[fileExtension as keyof typeof mimeTypes]
+        : "";
+    const expectedPrefix = mediaTypes[type!];
+    if (expectedPrefix && mimetype.split("/")[0] !== expectedPrefix) {
+      throw new Error(
+        `Expected a MIMETYPE for the file '${fileName}' starting with '${expectedPrefix}' but got '${mimetype}'`
+      );
+    }
+    return await this.gateway.post("api/media/asset.json", {
+      filepath: fileName,
+      mimetype,
+    });
+  }
+
+  private createMedia(details: FileDetails, type?: string) {
+    switch (type) {
+      case "img":
+        return new MediaImg(details);
+      case "video":
+        return new MediaVideo(details);
+      case "gif":
+        return new MediaGif(details);
+      default:
+        return new MediaFile(details);
+    }
+  }
+
+  /**
    * Submit a crosspost.
    *
    * @param subreddit The subreddit to submit the post to.
@@ -904,6 +1330,41 @@ export class SubredditControls extends BaseControls {
     subreddit: string,
     options: PostOptions
   ): Promise<string> {
+    let ws: InstanceType<typeof webSocket> | undefined;
+    if (options.websocketUrl) {
+      ws = (await this.initializeWebSocket(
+        options.websocketUrl
+      )) as InstanceType<typeof webSocket>;
+    }
+
+    debugPost("Posting to %s with options %o", subreddit, options);
+
+    const request: Data = this.createRequestData(subreddit, options);
+
+    if (ws) {
+      debugPost("Using websocket to post");
+      await this.handleRegularPost(request);
+      const submissionId = await this.handleWebSocketPost(ws);
+      debugPost("Submission ID: %s", submissionId);
+      return submissionId;
+    } else {
+      debugPost("Handling regular post.");
+      return await this.handleRegularPost(request);
+    }
+  }
+
+  private async initializeWebSocket(websocketUrl: string): Promise<unknown> {
+    const ws = new webSocket(websocketUrl);
+    await new Promise((resolve, reject) => {
+      ws.addEventListener("open", resolve);
+      ws.addEventListener("error", () =>
+        reject(new Error("Failed to open websocket"))
+      );
+    });
+    return ws;
+  }
+
+  private createRequestData(subreddit: string, options: PostOptions): Data {
     const request: Data = {
       sr: subreddit,
       kind: options.kind,
@@ -922,9 +1383,105 @@ export class SubredditControls extends BaseControls {
       request.captcha = options.captcha.response;
       request.iden = options.captcha.iden;
     }
+    if (options.kind === "gallery" && options.items) {
+      request.items = options.items.map(item => {
+        return {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          media_id: item.mediaId,
+          caption: item.caption,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          outbound_url: item.outboundUrl,
+        };
+      });
+    }
+    if (options.kind === "video" || options.kind === "videogif") {
+      request.video_poster_url = options.videoPosterUrl;
+    }
 
-    const submitResponse: Data = await this.gateway.post("api/submit", request);
-    return submitResponse.id as string;
+    return request;
+  }
+
+  private async handleWebSocketPost(ws: WebSocket): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        debugPost("Timing out websocket");
+        ws.close();
+        reject(
+          new Error(
+            "Websocket timed out. Your post may still have been created."
+          )
+        );
+      }, 10_000);
+      debugPost("Handling websocket post");
+      if (ws.readyState !== webSocket.OPEN) {
+        debugPost("Websocket not open. Falling back to regular post.");
+        reject(
+          new Error("Websocket error. Your post may still have been created.")
+        );
+      }
+
+      ws.addEventListener("message", (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data as string) as {
+            type: string;
+            payload: { redirect: string };
+          };
+          debugPost("Websocket message %o", data);
+          if (data.type === "failed") {
+            ws.close();
+            reject(new Error("Failed to create post."));
+          }
+          const submissionUrl = data.payload.redirect;
+          ws.removeEventListener("message", reject);
+          resolve(submissionIdRegex.exec(submissionUrl)![1]);
+        } catch (error) {
+          debugPost("Failed to parse websocket message %o", error);
+          reject(new Error("Failed to create post."));
+        } finally {
+          debugPost("Removing event listeners");
+          ws.removeEventListener("close", reject);
+          clearTimeout(timer);
+          ws.close();
+        }
+      });
+      ws.addEventListener("error", () => {
+        debugPost("Websocket error. Falling back to regular post.");
+        reject(
+          new Error(`Websocket error. Your post may still have been created.`)
+        );
+        ws.removeEventListener("close", reject);
+      });
+      ws.addEventListener("close", () => {
+        debugPost("Websocket closed.");
+        reject(
+          new Error(`Websocket closed. Your post may still have been created.`)
+        );
+      });
+    });
+  }
+
+  private async handleRegularPost(request: Data): Promise<string> {
+    let submitResponse: Data;
+    switch (request.kind) {
+      case "gallery":
+        submitResponse = await this.gateway.postJson(
+          "api/submit_gallery_post.json",
+          request
+        );
+        break;
+      case "poll":
+        submitResponse = await this.gateway.postJson(
+          "api/submit_poll_post",
+          request
+        );
+        break;
+      default:
+        submitResponse = await this.gateway.post("api/submit", request);
+    }
+    debugPost("Submit response %o", submitResponse);
+    return (
+      (submitResponse.id as string) && formatId(submitResponse.id as string)
+    );
   }
 
   /** @internal */

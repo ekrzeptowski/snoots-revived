@@ -93,7 +93,7 @@ out [this discussion](https://github.com/thislooksfun/snoots/discussions/4)!
 npm i snoots@dev
 ```
 
-Note: Node 14+ is required.
+Note: Node 20+ is required.
 
 ## Documentation
 

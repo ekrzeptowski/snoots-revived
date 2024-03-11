@@ -9,6 +9,7 @@ import type { ModeratorActionedUser } from "../user/moderator-actioned/base";
 import type { Moderator } from "../user/moderator-actioned/moderator";
 import type {
   BanOptions,
+  GalleryPostOptions,
   LinkPostOptions,
   SubredditControls,
   TextPostOptions,
@@ -818,6 +819,88 @@ export class Subreddit extends Content implements SubredditData {
     options: TextPostOptions = {}
   ): Promise<string> {
     return this.controls.postText(this.displayName, title, body, options);
+  }
+
+  /**
+   * Submit an image post to this subreddit.
+   *
+   * @param title The title of the post.
+   * @param imageFile The image to post.
+   * @param imageFileName The name of the image file.
+   * @param noWebsockets Whether to disable websockets for the image.
+   * @param options Any extra options.
+   *
+   * @returns A promise that resolves to the ID of the new post or undefined
+   */
+  async postImage(
+    title: string,
+    imageFile: Blob,
+    imageFileName: string,
+    noWebsockets = false,
+    options: LinkPostOptions = {}
+  ): Promise<string | undefined> {
+    return this.controls.postImage(
+      this.displayName,
+      title,
+      imageFile,
+      imageFileName,
+      noWebsockets,
+      options
+    );
+  }
+
+  /**
+   * Submit a video post.
+   * @param title The title of the post.
+   * @param videoFile The video file to post.
+   * @param videoFileName The name of the video file.
+   * @param thumbnailFile The thumbnail file to use.
+   * @param thumbnailFileName The name of the thumbnail file.
+   * @param videoGif Whether the video is a gif.
+   * @param noWebsockets Whether to disable websockets for the video.
+   * @param options Any extra options.
+   *
+   * @returns A promise that resolves to the ID of the new post or undefined
+   */
+  async postVideo(
+    title: string,
+    videoFile: Blob,
+    videoFileName: string,
+    thumbnailFile: Blob,
+    thumbnailFileName: string,
+    videoGif = false,
+    noWebsockets = false,
+    options: LinkPostOptions = {}
+  ): Promise<string | undefined> {
+    return this.controls.postVideo(
+      this.displayName,
+      title,
+      videoFile,
+      videoFileName,
+      thumbnailFile,
+      thumbnailFileName,
+      videoGif,
+      noWebsockets,
+      options
+    );
+  }
+
+  /**
+   * Submit a gallery post.
+   * @param params Options for submitting a gallery post.
+   * @returns A promise that resolves to the ID of the new post.
+   */
+  async postGallery({
+    gallery,
+    title,
+    options,
+  }: Omit<GalleryPostOptions, "subreddit">): Promise<string> {
+    return this.controls.postGallery({
+      gallery,
+      title,
+      subreddit: this.displayName,
+      options,
+    });
   }
 
   /**

@@ -8,7 +8,7 @@ import type {
   SomeResponse,
 } from "./types";
 
-import got from "got";
+import got from "got-cjs";
 
 import { makeDebug } from "../helper/debug";
 
@@ -126,6 +126,38 @@ export abstract class Gateway {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const jsonOptions = { json: { api_type: "json", ...json } };
     return await this.doPost(path, jsonOptions, query);
+  }
+
+  /**
+   * Issue a POST request to the Reddit API upload endpoint with form data.
+   *
+   * @internal
+   *
+   * @param path The path to POST.
+   * @param data The data to POST.
+   * @returns The result.
+   */
+  public async postUpload(path: string, data: FormData): Promise<Response> {
+    try {
+      debugRequest("POST", path, {});
+      const response = await fetch(path, {
+        method: "POST",
+        body: data,
+        mode: "no-cors",
+        headers: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          "user-agent": this.userAgent,
+        },
+      });
+      debugResponse("POST", path, response);
+      if (response.status === 201) {
+        return (await response.text()) as unknown as Response;
+      }
+      throw new Error("Failed to upload");
+    } catch (error) {
+      debugResponse("POST", path, error);
+      throw new Error("Failed to upload");
+    }
   }
 
   /** @internal */

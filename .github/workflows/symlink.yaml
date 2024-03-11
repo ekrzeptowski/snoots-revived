@@ -23,7 +23,7 @@ jobs:
           ref: gh-pages
       - uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.x
       - run: cd .meta/scripts && npm ci
       - run: node .meta/scripts/update_symlinks.js
       - name: Commit and push

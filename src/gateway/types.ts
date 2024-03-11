@@ -1,7 +1,7 @@
 export type {
   OptionsOfTextResponseBody as GotOptions,
   Response as GotResponse,
-} from "got";
+} from "got-cjs";
 
 /** The types of values that are allowed in a query. */
 export type QueryValue = string | number | boolean | null | undefined;

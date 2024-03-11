@@ -8,9 +8,9 @@ To get started with local development, do the following:
 
 ```sh
 # Clone the repo.
-git clone https://github.com/thislooksfun/snoots
+git clone https://github.com/ekrzeptowski/snoots-revived
 # Move into the folder.
-cd snoots
+cd snoots-revived
 # Install dependencies.
 npm install
 ```

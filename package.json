@@ -1,5 +1,5 @@
 {
-  "name": "snoots",
+  "name": "snoots-revived",
   "version": "1.0.0-dev.29",
   "description": "A modern, fully-featured, strongly-typed reddit api.",
   "module": "dist/index.mjs",
@@ -86,11 +86,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thislooksfun/snoots.git"
+    "url": "git+https://github.com/ekrzeptowski/snoots-revived.git"
   },
   "author": "thislooksfun <tlf@thislooks.fun> (https://thislooks.fun)",
+  "contributors": [
+    "ekrzeptowski <contact@ekrzeptowski.pl> (https://ekrzeptowski.pl)"
+  ],
   "bugs": {
-    "url": "https://github.com/thislooksfun/snoots/issues"
+    "url": "https://github.com/ekrzeptowski/snoots-revived/issues"
   },
-  "homepage": "https://github.com/thislooksfun/snoots#readme"
+  "homepage": "https://github.com/ekrzeptowski/snoots-revived#readme"
 }

@@ -850,6 +850,42 @@ export class Subreddit extends Content implements SubredditData {
   }
 
   /**
+   * Submit a video post.
+   * @param title The title of the post.
+   * @param videoFile The video file to post.
+   * @param videoFileName The name of the video file.
+   * @param thumbnailFile The thumbnail file to use.
+   * @param thumbnailFileName The name of the thumbnail file.
+   * @param videoGif Whether the video is a gif.
+   * @param noWebsockets Whether to disable websockets for the video.
+   * @param options Any extra options.
+   *
+   * @returns A promise that resolves to the ID of the new post or undefined
+   */
+  async postVideo(
+    title: string,
+    videoFile: Blob,
+    videoFileName: string,
+    thumbnailFile: Blob,
+    thumbnailFileName: string,
+    videoGif = false,
+    noWebsockets = false,
+    options: LinkPostOptions = {}
+  ): Promise<string | undefined> {
+    return this.controls.postVideo(
+      this.displayName,
+      title,
+      videoFile,
+      videoFileName,
+      thumbnailFile,
+      thumbnailFileName,
+      videoGif,
+      noWebsockets,
+      options
+    );
+  }
+
+  /**
    * Submit a gallery post.
    * @param params Options for submitting a gallery post.
    * @returns A promise that resolves to the ID of the new post.

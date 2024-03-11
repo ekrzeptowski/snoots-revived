@@ -197,7 +197,14 @@ export interface UploadResponse {
   };
 }
 
-type PostTypes = "self" | "link" | "crosspost" | "image" | "gallery";
+type PostTypes =
+  | "self"
+  | "link"
+  | "crosspost"
+  | "image"
+  | "gallery"
+  | "video"
+  | "videogif";
 
 interface PostOptions {
   kind: PostTypes;
@@ -212,6 +219,7 @@ interface PostOptions {
   // This only applies to link and cross posts
   resubmit: boolean;
   websocketUrl?: string;
+  videoPosterUrl?: string;
   items?: {
     caption?: string;
     mediaId: string;
@@ -1043,6 +1051,82 @@ export class SubredditControls extends BaseControls {
   }
 
   /**
+   * Submit a video post.
+   * @param subreddit The subreddit to submit the post to.
+   * @param title The title of the post.
+   * @param videoFile The video file to post.
+   * @param videoFileName The name of the video file.
+   * @param thumbnailFile The thumbnail file to use.
+   * @param thumbnailFileName The name of the thumbnail file.
+   * @param videoGif Whether the video is a gif.
+   * @param noWebsockets Whether to disable websockets for the video.
+   * @param options Any extra options.
+   *
+   * @returns A promise that resolves to the ID of the new post or undefined
+   */
+  async postVideo(
+    subreddit: string,
+    title: string,
+    videoFile: Blob,
+    videoFileName: string,
+    thumbnailFile: Blob,
+    thumbnailFileName: string,
+    videoGif = false,
+    noWebsockets = false,
+    options: LinkPostOptions = {}
+  ): Promise<string | undefined> {
+    let url, videoPosterUrl, websocketUrl;
+    const kind = videoGif ? "videogif" : "video";
+
+    try {
+      const video =
+        videoFile instanceof MediaVideo
+          ? videoFile
+          : await this.uploadMedia({
+              file: videoFile,
+              name: videoFileName,
+              type: videoGif ? "gif" : "video",
+            });
+      debug("Video upload response %o", video);
+      url = video?.fileUrl;
+      websocketUrl = video?.websocketUrl;
+    } catch (error) {
+      debug("Failed to upload video: %o", error);
+      throw new Error(`Failed to upload video: ${(error as Error).message}`);
+    }
+    try {
+      const thumbnail =
+        thumbnailFile instanceof MediaImg
+          ? thumbnailFile
+          : await this.uploadMedia({
+              file: thumbnailFile,
+              name: thumbnailFileName,
+              type: "img",
+            });
+      debug("Thumbnail upload response %o", thumbnail);
+      videoPosterUrl = thumbnail?.fileUrl;
+    } catch (error) {
+      debug("Failed to upload thumbnail: %o", error);
+      throw new Error(
+        `Failed to upload thumbnail: ${(error as Error).message}`
+      );
+    }
+
+    return this.post(subreddit, {
+      title,
+      kind,
+      url,
+      videoPosterUrl,
+      websocketUrl: noWebsockets ? undefined : websocketUrl,
+      sendReplies: options.sendReplies ?? false,
+      resubmit: !options.unique,
+      captcha: options.captcha,
+      nsfw: options.nsfw ?? false,
+      spoiler: options.spoiler ?? false,
+    });
+  }
+
+  /**
    * Submit a gallery post.
    * @param params Options for submitting a gallery post.
    * @returns A promise that resolves to the ID of the new post.
@@ -1309,6 +1393,9 @@ export class SubredditControls extends BaseControls {
           outbound_url: item.outboundUrl,
         };
       });
+    }
+    if (options.kind === "video" || options.kind === "videogif") {
+      request.video_poster_url = options.videoPosterUrl;
     }
 
     return request;

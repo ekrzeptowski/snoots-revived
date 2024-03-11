@@ -39,7 +39,7 @@ jobs:
         run: |
           npm config set registry https://registry.npmjs.org/
           npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
-          npm dist-tag add snoots@${{ steps.semrel.outputs.release-version }} latest
+          npm dist-tag add snoots-revived@${{ steps.semrel.outputs.release-version }} latest
 
   document:
     name: Document new version

@@ -1,14 +1,4 @@
-# This repository is archived
-
-I have lost interest in the project. Reddit's API is awfully designed and really not fun to work with, and all the projects I had in mind that inspired me to start this project have since fallen through or been shut down.
-
-Additionally, Reddit's recent decision to effectively kill 3rd party applications with their API costs, and the continued public slander, misinformation, broken promises, and lack of care about accessibility by Reddit's leadership<sup>[\[1\]](https://redd.it/142kct8)[\[2\]](https://redd.it/145l7wp)[\[3\]](https://www.theverge.com/2023/6/5/23749188)</sup> has made me not want to have anything further to do with reddit or their API until and unless things change.
-
-If Reddit makes steps to fix what they have broken, both their relations with their users and their API, then I might revive this project. But unless that happens this project is dead.
-
----
-
-# snoots
+# snoots-revived
 
 <p align="center">
   <a href="https://github.com/semantic-release/semantic-release"
@@ -17,61 +7,61 @@ If Reddit makes steps to fix what they have broken, both their relations with th
       src="https://flat.badgen.net/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80/semantic%20release/e10079"
     /></a
   >
-  <a href="https://github.com/thislooksfun/snoots/releases/latest"
+  <a href="https://github.com/ekrzeptowski/snoots-revived/releases/latest"
     ><img
       alt="latest release"
-      src="https://flat.badgen.net/github/release/thislooksfun/snoots"
+      src="https://flat.badgen.net/github/release/ekrzeptowski/snoots-revived"
     /></a
   >
-  <a href="https://github.com/thislooksfun/snoots/releases"
+  <a href="https://github.com/ekrzeptowski/snoots-revived/snoots/releases"
     ><img
       alt="latest stable release"
-      src="https://flat.badgen.net/github/release/thislooksfun/snoots/stable"
+      src="https://flat.badgen.net/github/release/ekrzeptowski/snoots-revived/stable"
     /></a
   >
   <a href="#"
     ><img
       alt="checks status"
-      src="https://flat.badgen.net/github/checks/thislooksfun/snoots"
+      src="https://flat.badgen.net/github/checks/ekrzeptowski/snoots-revived"
     /></a
   >
-  <a href="https://app.codecov.io/gh/thislooksfun/snoots"
+  <a href="https://app.codecov.io/gh/ekrzeptowski/snoots-revived"
     ><img
       alt="coverage"
-      src="https://flat.badgen.net/codecov/c/github/thislooksfun/snoots"
+      src="https://flat.badgen.net/codecov/c/github/ekrzeptowski/snoots-revived"
     /></a
   >
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/snoots?activeTab=versions"
+  <a href="https://www.npmjs.com/package/snoots-revived?activeTab=versions"
     ><img
       alt="npm version"
-      src="https://flat.badgen.net/npm/v/snoots"
+      src="https://flat.badgen.net/npm/v/snoots-revived"
     /></a
   >
-  <a href="https://github.com/thislooksfun/snoots/tree/master/types"
+  <a href="https://github.com/ekrzeptowski/snoots-revived/tree/master/types"
     ><img
       alt="npm types"
-      src="https://flat.badgen.net/npm/types/snoots"
+      src="https://flat.badgen.net/npm/types/snoots-revived"
     /></a
   >
-  <a href="https://www.npmjs.com/package/snoots"
+  <a href="https://www.npmjs.com/package/snoots-revived"
     ><img
       alt="weekly npm downloads"
-      src="https://flat.badgen.net/npm/dw/snoots"
+      src="https://flat.badgen.net/npm/dw/snoots-revived"
     /></a
   >
-  <a href="https://www.npmjs.com/package/snoots?activeTab=dependents"
+  <a href="https://www.npmjs.com/package/snoots-revived?activeTab=dependents"
     ><img
       alt="npm dependents"
-      src="https://flat.badgen.net/npm/dependents/snoots"
+      src="https://flat.badgen.net/npm/dependents/snoots-revived"
     /></a
   >
-  <a href="https://github.com/thislooksfun/snoots/blob/master/LICENSE"
+  <a href="https://github.com/ekrzeptowski/snoots-revived/blob/master/LICENSE"
     ><img
       alt="license"
-      src="https://flat.badgen.net/github/license/thislooksfun/snoots"
+      src="https://flat.badgen.net/github/license/ekrzeptowski/snoots-revived"
     /></a
   >
 </p>
@@ -90,7 +80,7 @@ out [this discussion](https://github.com/thislooksfun/snoots/discussions/4)!
 ## Installation
 
 ```sh
-npm i snoots@dev
+npm i snoots-revived@dev
 ```
 
 Note: Node 20+ is required.
@@ -107,5 +97,5 @@ If you want to help out, please read the [CONTRIBUTING.md][c.md].
 <!-- Links -->
 
 [sw]: https://github.com/not-an-aardvark/snoowrap
-[ld]: https://thislooks.fun/snoots/docs/latest
-[c.md]: https://github.com/thislooksfun/snoots/blob/master/CONTRIBUTING.md
+[ld]: https://ekrzeptowski.github.io/snoots-revived/docs/latest
+[c.md]: https://github.com/ekrzeptowski/snoots-revived/blob/master/CONTRIBUTING.md

@@ -1,13 +1,13 @@
 <!-- This README will become the documentation home page. -->
 
-# Snoots @ VERSION_IDENTIFIER
+# Snoots-revived @ VERSION_IDENTIFIER
 
-Welcome to the snoots documentation!
+Welcome to the snoots-revived documentation!
 
 Helpful links:
 
-- [GitHub repo](https://github.com/thislooksfun/snoots)
-- [More versions](https://thislooks.fun/snoots/docs)
+- [GitHub repo](https://github.com/ekrzeptowski/snoots-revived)
+- [More versions](https://ekrzeptowski.github.io/snoots-revived/docs)
 - [Migrating from snoowrap](#migrating-from-snoowrap)
 
 ---
@@ -141,4 +141,4 @@ What does this mean in practice? Here are some examples:
 [cd]: ./classes/Client.html
 [ua]: ./interfaces/ClientOptions.html#userAgent
 [creds]: ./interfaces/Credentials.html
-[exdir]: https://github.com/thislooksfun/snoots/blob/master/examples
+[exdir]: https://github.com/ekrzeptowski/snoots-revived/blob/master/examples

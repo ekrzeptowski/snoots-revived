@@ -25,7 +25,7 @@ export type {
   TextPostOptions,
 } from "./subreddit/controls";
 export { SubredditControls } from "./subreddit/controls";
-export type { SubredditData } from "./subreddit/object";
+export type { PostRequirements, SubredditData } from "./subreddit/object";
 export { Subreddit } from "./subreddit/object";
 export type { SubredditFlair, SubredditType } from "./subreddit/types";
 export type { SearchSort, SearchSyntax, Size, TimeRange } from "./types";

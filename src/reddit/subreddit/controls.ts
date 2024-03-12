@@ -13,7 +13,7 @@ import type {
 } from "../types";
 import type { BannedUser } from "../user/moderator-actioned/banned";
 import type { ModeratorActionedUser } from "../user/moderator-actioned/base";
-import type { SubredditData } from "./object";
+import type { PostRequirements, SubredditData } from "./object";
 import type { FileDetails, SubredditFlair } from "./types";
 
 import * as fs from "fs";
@@ -1351,6 +1351,18 @@ export class SubredditControls extends BaseControls {
       debugPost("Handling regular post.");
       return await this.handleRegularPost(request);
     }
+  }
+
+  /**
+   * Get the post requirements for this subreddit.
+   * @param subreddit The name of the subreddit.
+   * @returns A promise that resolves to the {@link PostRequirements} for this subreddit.
+   */
+  async getPostRequirements(subreddit: string): Promise<PostRequirements> {
+    const raw: RedditObject = await this.gateway.get(
+      `api/v1/${subreddit}/post_requirements`
+    );
+    return fromRedditData(raw);
   }
 
   private async initializeWebSocket(websocketUrl: string): Promise<unknown> {

@@ -1,3 +1,10 @@
+## [1.0.0-dev.2](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2024-03-12)
+
+
+### Features
+
+* add a way to get post requirements ([c36e742](https://github.com/ekrzeptowski/snoots-revived/commit/c36e7421564e2ff9dcd71342eeea91871bd03839))
+
 ## 1.0.0-dev.1 (2024-03-11)
 
 

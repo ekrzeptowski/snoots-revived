@@ -348,6 +348,54 @@ export interface SubredditData extends ContentData {
   // wls: number;
 }
 
+/** The attributes specific to post requirements. */
+export interface PostRequirements {
+  /** An array of strings that are not allowed in the body of a post. */
+  bodyBlacklistedStrings: string[];
+  /** An array of regular expressions that the body of a post must match. */
+  bodyRegexes: string[];
+  /** An array of strings that the body of a post must contain. */
+  bodyRequiredStrings: string[];
+  /** The policy for the body of a post. */
+  bodyRestrictionPolicy: "none" | "required" | "notAllowed";
+  /** The maximum length of the body of a post. */
+  bodyTextMaxLength: Maybe<number>;
+  /** The minimum length of the body of a post. */
+  bodyTextMixLength: Maybe<number>;
+  /** An array of domains that are not allowed in the link of a post. */
+  domainBlacklist: string[];
+  /** An array of domains that are allowed in the link of a post. */
+  domainWhitelist: string[];
+  /** The policy for gallery captions. */
+  galleryCaptionsRequirement: "none" | "optional" | "required";
+  /** The maximum number of items in a gallery. */
+  galleryMaxItems: Maybe<number>;
+  /** The minimum number of items in a gallery. */
+  galleryMinItems: Maybe<number>;
+  /** The policy for gallery URLs. */
+  galleryUrlsRequirement: "none" | "optional" | "required";
+  /** The policy for the guidelines. */
+  guidelinesDisplayPolicy: "required" | "optional" | "hidden";
+  /** The text of the guidelines. */
+  guidelinesText: Maybe<string>;
+  /** Whether a flair is required. */
+  isFlairRequired: boolean;
+  /** The minimum days required for a repost of a link. */
+  linkRepostAge: Maybe<number>;
+  /** The policy for the link of a post. */
+  linkRestrictionPolicy: "none" | "whitelist" | "blacklist";
+  /** An array of strings that are not allowed in the title of a post. */
+  titleBlacklistedStrings: string[];
+  /** An array of regular expressions that the title of a post must match. */
+  titleRegexes: string[];
+  /** An array of strings that the title of a post must contain. */
+  titleRequiredStrings: string[];
+  /** Maximum length of the title of a post. */
+  titleTextMaxLength: Maybe<number>;
+  /** Minimum length of the title of a post. */
+  titleTextMixLength: Maybe<number>;
+}
+
 /** A single subreddit. */
 export class Subreddit extends Content implements SubredditData {
   accountsActiveIsFuzzed: boolean;
@@ -1136,5 +1184,13 @@ export class Subreddit extends Content implements SubredditData {
    */
   getBannedUsers(): Listing<BannedUser> {
     return this.controls.getBannedUsers(this.displayName);
+  }
+
+  /**
+   * Get the post requirements for this subreddit.
+   * @returns A promise that resolves to the {@link PostRequirements} for this subreddit.
+   */
+  getPostRequirements(): Promise<PostRequirements> {
+    return this.controls.getPostRequirements(this.displayName);
   }
 }

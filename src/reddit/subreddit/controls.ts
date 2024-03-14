@@ -94,6 +94,12 @@ export interface TextPostOptions {
 
   /** Whether or not this post is a spoiler (defaults to `false`). */
   spoiler?: boolean;
+
+  /** The flair ID to apply to the post. */
+  flairId?: string;
+
+  /** The flair text to apply to the post. */
+  flairText?: string;
 }
 
 /** Extra options for submitting a link post. */
@@ -215,6 +221,8 @@ interface PostOptions {
   sendReplies: boolean;
   captcha?: Captcha;
   nsfw: boolean;
+  flairId?: string;
+  flairText?: string;
   spoiler: boolean;
   // This only applies to link and cross posts
   resubmit: boolean;
@@ -965,6 +973,8 @@ export class SubredditControls extends BaseControls {
       captcha: options.captcha,
       nsfw: options.nsfw ?? false,
       spoiler: options.spoiler ?? false,
+      flairId: options.flairId ?? undefined,
+      flairText: options.flairText ?? undefined,
     });
   }
 
@@ -993,6 +1003,8 @@ export class SubredditControls extends BaseControls {
       captcha: options.captcha,
       nsfw: options.nsfw ?? false,
       spoiler: options.spoiler ?? false,
+      flairId: options.flairId ?? undefined,
+      flairText: options.flairText ?? undefined,
     });
   }
 
@@ -1043,6 +1055,8 @@ export class SubredditControls extends BaseControls {
         captcha: options.captcha,
         nsfw: options.nsfw ?? false,
         spoiler: options.spoiler ?? false,
+        flairId: options.flairId ?? undefined,
+        flairText: options.flairText ?? undefined,
       });
     } catch (error) {
       debug("Failed to post image: %o", error);
@@ -1123,6 +1137,8 @@ export class SubredditControls extends BaseControls {
       captcha: options.captcha,
       nsfw: options.nsfw ?? false,
       spoiler: options.spoiler ?? false,
+      flairId: options.flairId ?? undefined,
+      flairText: options.flairText ?? undefined,
     });
   }
 
@@ -1178,6 +1194,8 @@ export class SubredditControls extends BaseControls {
       captcha: options.captcha,
       nsfw: options.nsfw ?? false,
       spoiler: options.spoiler ?? false,
+      flairId: options.flairId ?? undefined,
+      flairText: options.flairText ?? undefined,
     });
   }
 
@@ -1322,6 +1340,8 @@ export class SubredditControls extends BaseControls {
       captcha: options.captcha,
       nsfw: options.nsfw ?? false,
       spoiler: options.spoiler ?? false,
+      flairId: options.flairId ?? undefined,
+      flairText: options.flairText ?? undefined,
     });
   }
 
@@ -1394,6 +1414,12 @@ export class SubredditControls extends BaseControls {
     if (options.captcha != undefined) {
       request.captcha = options.captcha.response;
       request.iden = options.captcha.iden;
+    }
+    if (options.flairId != undefined) {
+      request.flair_id = options.flairId;
+      if (options.flairText != undefined) {
+        request.flair_text = options.flairText;
+      }
     }
     if (options.kind === "gallery" && options.items) {
       request.items = options.items.map(item => {

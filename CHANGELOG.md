@@ -1,3 +1,10 @@
+## [1.0.0-dev.3](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2024-03-14)
+
+
+### Features
+
+* add a way to post with a flair ([148632c](https://github.com/ekrzeptowski/snoots-revived/commit/148632c671d05057c5a275405084323012a173c9))
+
 ## [1.0.0-dev.2](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2024-03-12)
 
 

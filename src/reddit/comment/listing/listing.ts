@@ -17,7 +17,7 @@ const debug = makeDebug("listing:comment");
 
 function makeFetcher(
   after: RedditObjectListing["after"],
-  context: ListingContext
+  context: ListingContext,
 ): Maybe<Fetcher<Comment>> {
   if (after == undefined) return undefined;
 

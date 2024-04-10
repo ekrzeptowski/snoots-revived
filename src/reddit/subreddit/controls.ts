@@ -344,7 +344,7 @@ export class SubredditControls extends BaseControls {
    */
   async removeWikiContributor(
     subreddit: string,
-    username: string
+    username: string,
   ): Promise<void> {
     await this.unfriend(subreddit, username, "wikicontributor");
   }
@@ -378,7 +378,7 @@ export class SubredditControls extends BaseControls {
   async banUser(
     subreddit: string,
     username: string,
-    options: BanOptions = {}
+    options: BanOptions = {},
   ): Promise<void> {
     const friendOptions: Query = {};
     if (options.duration != undefined)
@@ -505,7 +505,7 @@ export class SubredditControls extends BaseControls {
    */
   async getModerators(subreddit: string): Promise<Moderator[]> {
     const result = await this.gateway.get<RedditObject>(
-      `r/${subreddit}/about/moderators`
+      `r/${subreddit}/about/moderators`,
     );
     assertKind("UserList", result);
     const moderators = result.data.children as Data[];
@@ -516,7 +516,7 @@ export class SubredditControls extends BaseControls {
   protected getSortedPosts(
     subreddit: string | undefined,
     sort: PostSort,
-    options: Query = {}
+    options: Query = {},
   ): Listing<Post> {
     const url = subreddit ? `r/${subreddit}/` : "";
     const request = {
@@ -602,7 +602,7 @@ export class SubredditControls extends BaseControls {
    */
   getControversialPosts(
     subreddit?: string,
-    time: TimeRange = "all"
+    time: TimeRange = "all",
   ): Listing<Post> {
     return this.getSortedPosts(subreddit, "controversial", { t: time });
   }
@@ -669,7 +669,7 @@ export class SubredditControls extends BaseControls {
   /** @internal */
   protected getAboutListing(
     subreddit: string,
-    type: string
+    type: string,
   ): Listing<Comment | Post> {
     const request = { url: `r/${subreddit}/about/${type}`, query: {} };
     const context = { request, client: this.client };
@@ -679,7 +679,7 @@ export class SubredditControls extends BaseControls {
   /** @internal */
   protected getAboutListingComments(
     subreddit: string,
-    type: string
+    type: string,
   ): Listing<Comment> {
     const request = {
       url: `r/${subreddit}/about/${type}`,
@@ -692,7 +692,7 @@ export class SubredditControls extends BaseControls {
   /** @internal */
   protected getAboutListingPosts(
     subreddit: string,
-    type: string
+    type: string,
   ): Listing<Post> {
     const request = {
       url: `r/${subreddit}/about/${type}`,
@@ -710,7 +710,7 @@ export class SubredditControls extends BaseControls {
    */
   async getLinkFlairTemplates(subreddit: string): Promise<SubredditFlair[]> {
     const raw = await this.gateway.get<Data[]>(
-      `r/${subreddit}/api/link_flair_v2.json`
+      `r/${subreddit}/api/link_flair_v2.json`,
     );
     return raw.map((flair: Data) => fromRedditData(flair));
   }
@@ -893,7 +893,7 @@ export class SubredditControls extends BaseControls {
 
     // Reddit implemented '/random' by redirecting (302) to a random post.
     const postInfo: RedditObject<{ location: string }> = await this.gateway.get(
-      `${base}random`
+      `${base}random`,
     );
     assertKind("snoots_redirect", postInfo);
 
@@ -923,7 +923,7 @@ export class SubredditControls extends BaseControls {
     query: string,
     time: TimeRange = "all",
     sort: SearchSort = "relevance",
-    syntax: SearchSyntax = "plain"
+    syntax: SearchSyntax = "plain",
   ): Listing<Post> {
     return this.client.posts.search(query, subreddit, time, sort, syntax, true);
   }
@@ -962,7 +962,7 @@ export class SubredditControls extends BaseControls {
     subreddit: string,
     title: string,
     body?: string,
-    options: TextPostOptions = {}
+    options: TextPostOptions = {},
   ): Promise<string> {
     return this.post(subreddit, {
       kind: "self",
@@ -992,7 +992,7 @@ export class SubredditControls extends BaseControls {
     subreddit: string,
     title: string,
     url: string,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string> {
     return this.post(subreddit, {
       kind: "link",
@@ -1025,7 +1025,7 @@ export class SubredditControls extends BaseControls {
     imageFile: Blob,
     imageFileName: string,
     noWebsockets = false,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string | undefined> {
     let url, websocketUrl;
     try {
@@ -1087,7 +1087,7 @@ export class SubredditControls extends BaseControls {
     thumbnailFileName: string,
     videoGif = false,
     noWebsockets = false,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string | undefined> {
     let url, videoPosterUrl, websocketUrl;
     const kind = videoGif ? "videogif" : "video";
@@ -1122,7 +1122,7 @@ export class SubredditControls extends BaseControls {
     } catch (error) {
       debug("Failed to upload thumbnail: %o", error);
       throw new Error(
-        `Failed to upload thumbnail: ${(error as Error).message}`
+        `Failed to upload thumbnail: ${(error as Error).message}`,
       );
     }
 
@@ -1172,7 +1172,7 @@ export class SubredditControls extends BaseControls {
         } catch (error) {
           debug("Failed to upload image: %o", error);
           throw new Error(
-            `Failed to upload image: ${(error as Error).message}`
+            `Failed to upload image: ${(error as Error).message}`,
           );
         }
         return {
@@ -1180,10 +1180,10 @@ export class SubredditControls extends BaseControls {
           outboundUrl: item.outboundUrl,
           mediaId: mediaId,
         };
-      })
+      }),
     );
     const filteredItems = items.filter(
-      item => item.mediaId
+      item => item.mediaId,
     ) as PostOptions["items"];
     return this.post(subreddit, {
       kind: "gallery",
@@ -1221,7 +1221,7 @@ export class SubredditControls extends BaseControls {
     const uploadResponse = (await this.getUploadResponse(
       parsedFile,
       type,
-      fileName
+      fileName,
     )) as UploadResponse;
 
     debugUpload("Upload response %o", uploadResponse);
@@ -1244,7 +1244,7 @@ export class SubredditControls extends BaseControls {
       parsedFile instanceof stream.Readable
         ? ((await blob(parsedFile)) as Blob)
         : parsedFile,
-      fileName
+      fileName,
     );
     debugUpload("Form data %o", formData);
     const response = isBrowser
@@ -1271,7 +1271,7 @@ export class SubredditControls extends BaseControls {
       !(Blob && file instanceof Blob)
     ) {
       throw new Error(
-        "'options.file' must be one of: 'string', 'stream.Readable', 'Blob', or a 'File'"
+        "'options.file' must be one of: 'string', 'stream.Readable', 'Blob', or a 'File'",
       );
     }
     debugUpload("Validated file %o", { file, type });
@@ -1280,7 +1280,7 @@ export class SubredditControls extends BaseControls {
   private async getUploadResponse(
     file: Blob | stream.Readable,
     type: UploadMediaOptions["type"],
-    fileName?: string
+    fileName?: string,
   ) {
     if (!fileName) {
       throw new Error("File name is required");
@@ -1293,7 +1293,7 @@ export class SubredditControls extends BaseControls {
     const expectedPrefix = mediaTypes[type!];
     if (expectedPrefix && mimetype.split("/")[0] !== expectedPrefix) {
       throw new Error(
-        `Expected a MIMETYPE for the file '${fileName}' starting with '${expectedPrefix}' but got '${mimetype}'`
+        `Expected a MIMETYPE for the file '${fileName}' starting with '${expectedPrefix}' but got '${mimetype}'`,
       );
     }
     return await this.gateway.post("api/media/asset.json", {
@@ -1329,7 +1329,7 @@ export class SubredditControls extends BaseControls {
     subreddit: string,
     title: string,
     postID: string,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string> {
     return this.post(subreddit, {
       kind: "crosspost",
@@ -1348,12 +1348,12 @@ export class SubredditControls extends BaseControls {
   // TODO: Support 'oc' and flairs.
   protected async post(
     subreddit: string,
-    options: PostOptions
+    options: PostOptions,
   ): Promise<string> {
     let ws: InstanceType<typeof webSocket> | undefined;
     if (options.websocketUrl) {
       ws = (await this.initializeWebSocket(
-        options.websocketUrl
+        options.websocketUrl,
       )) as InstanceType<typeof webSocket>;
     }
 
@@ -1380,7 +1380,7 @@ export class SubredditControls extends BaseControls {
    */
   async getPostRequirements(subreddit: string): Promise<PostRequirements> {
     const raw: RedditObject = await this.gateway.get(
-      `api/v1/${subreddit}/post_requirements`
+      `api/v1/${subreddit}/post_requirements`,
     );
     return fromRedditData(raw);
   }
@@ -1390,7 +1390,7 @@ export class SubredditControls extends BaseControls {
     await new Promise((resolve, reject) => {
       ws.addEventListener("open", resolve);
       ws.addEventListener("error", () =>
-        reject(new Error("Failed to open websocket"))
+        reject(new Error("Failed to open websocket")),
       );
     });
     return ws;
@@ -1446,15 +1446,15 @@ export class SubredditControls extends BaseControls {
         ws.close();
         reject(
           new Error(
-            "Websocket timed out. Your post may still have been created."
-          )
+            "Websocket timed out. Your post may still have been created.",
+          ),
         );
       }, 10_000);
       debugPost("Handling websocket post");
       if (ws.readyState !== webSocket.OPEN) {
         debugPost("Websocket not open. Falling back to regular post.");
         reject(
-          new Error("Websocket error. Your post may still have been created.")
+          new Error("Websocket error. Your post may still have been created."),
         );
       }
 
@@ -1485,14 +1485,14 @@ export class SubredditControls extends BaseControls {
       ws.addEventListener("error", () => {
         debugPost("Websocket error. Falling back to regular post.");
         reject(
-          new Error(`Websocket error. Your post may still have been created.`)
+          new Error(`Websocket error. Your post may still have been created.`),
         );
         ws.removeEventListener("close", reject);
       });
       ws.addEventListener("close", () => {
         debugPost("Websocket closed.");
         reject(
-          new Error(`Websocket closed. Your post may still have been created.`)
+          new Error(`Websocket closed. Your post may still have been created.`),
         );
       });
     });
@@ -1504,13 +1504,15 @@ export class SubredditControls extends BaseControls {
       case "gallery":
         submitResponse = await this.gateway.postJson(
           "api/submit_gallery_post.json",
-          request
+          request,
+          {},
         );
         break;
       case "poll":
         submitResponse = await this.gateway.postJson(
           "api/submit_poll_post",
-          request
+          request,
+          {},
         );
         break;
       default:
@@ -1527,7 +1529,7 @@ export class SubredditControls extends BaseControls {
     subreddit: string,
     username: string,
     type: string,
-    options: Query = {}
+    options: Query = {},
   ) {
     await this.gateway.post(`r/${subreddit}/api/friend`, {
       ...options,
@@ -1541,7 +1543,7 @@ export class SubredditControls extends BaseControls {
     subreddit: string,
     username: string,
     type: string,
-    options: Query = {}
+    options: Query = {},
   ) {
     await this.gateway.post(`r/${subreddit}/api/unfriend`, {
       ...options,

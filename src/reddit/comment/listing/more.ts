@@ -79,7 +79,7 @@ export class MoreComments implements Fetcher<Comment> {
       const query = { children: page.join(","), link_id: `t3_${context.post}` };
       const childrenResponse: Data = await context.client.gateway.get(
         "api/morechildren",
-        query
+        query,
       );
 
       const rawChildren = childrenResponse.things as RedditObject[];

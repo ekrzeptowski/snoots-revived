@@ -548,8 +548,9 @@ export class Subreddit extends Content implements SubredditData {
     // this.notificationLevel = data.notificationLevel;
     this.originalContentTagEnabled = data.originalContentTagEnabled;
     this.over18 = data.over18;
-    // this.predictionLeaderboardEntryType = data.predictionLeaderboardEntryType;
-    // this.primaryColor = data.primaryColor;
+    // this.predictionLeaderboardEntryType =
+    // data.predictionLeaderboardEntryType; this.primaryColor =
+    // data.primaryColor;
     this.publicTraffic = data.publicTraffic;
     this.quarantine = data.quarantine;
     this.restrictCommenting = data.restrictCommenting;
@@ -833,7 +834,7 @@ export class Subreddit extends Content implements SubredditData {
     query: string,
     time: TimeRange = "all",
     sort: SearchSort = "relevance",
-    syntax: SearchSyntax = "plain"
+    syntax: SearchSyntax = "plain",
   ): Listing<Post> {
     return this.controls.search(this.displayName, query, time, sort, syntax);
   }
@@ -864,7 +865,7 @@ export class Subreddit extends Content implements SubredditData {
   async postText(
     title: string,
     body?: string,
-    options: TextPostOptions = {}
+    options: TextPostOptions = {},
   ): Promise<string> {
     return this.controls.postText(this.displayName, title, body, options);
   }
@@ -885,7 +886,7 @@ export class Subreddit extends Content implements SubredditData {
     imageFile: Blob,
     imageFileName: string,
     noWebsockets = false,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string | undefined> {
     return this.controls.postImage(
       this.displayName,
@@ -893,7 +894,7 @@ export class Subreddit extends Content implements SubredditData {
       imageFile,
       imageFileName,
       noWebsockets,
-      options
+      options,
     );
   }
 
@@ -918,7 +919,7 @@ export class Subreddit extends Content implements SubredditData {
     thumbnailFileName: string,
     videoGif = false,
     noWebsockets = false,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string | undefined> {
     return this.controls.postVideo(
       this.displayName,
@@ -929,7 +930,7 @@ export class Subreddit extends Content implements SubredditData {
       thumbnailFileName,
       videoGif,
       noWebsockets,
-      options
+      options,
     );
   }
 
@@ -963,7 +964,7 @@ export class Subreddit extends Content implements SubredditData {
   async postLink(
     title: string,
     url: string,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string> {
     return this.controls.postLink(this.displayName, title, url, options);
   }
@@ -980,13 +981,13 @@ export class Subreddit extends Content implements SubredditData {
   async postCrosspost(
     title: string,
     postID: string,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string> {
     return this.controls.postCrosspost(
       this.displayName,
       title,
       postID,
-      options
+      options,
     );
   }
 

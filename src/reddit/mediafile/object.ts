@@ -31,14 +31,22 @@ export interface FileDetails {
  * A class representing media files uploaded to reddit to be embedded on
  * submissions.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface MediaFile extends FileDetails {}
 /** @internal */
-export class MediaFile {
+export class MediaFile implements FileDetails {
   /**
    * @summary The media type. Only available on {@link MediaImg}, {@link MediaVideo} and {@link MediaGif}.
    */
   type?: string;
+  /** @internal */
+  fileUrl: string;
+  /** @internal */
+  mediaId: string;
+  /** @internal */
+  websocketUrl?: string;
+  /** @internal */
+  caption?: string;
+  /** @internal */
+  outboundUrl?: string;
 
   /**
    * @summary Constructs a new media file. In most cases you should call {@link SubredditControls#uploadMedia} instead.

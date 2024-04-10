@@ -179,7 +179,7 @@ export class Client {
 
       debug(
         "Created Gateway for client; type = %s",
-        this.gateway.constructor.name
+        this.gateway.constructor.name,
       );
     }
 
@@ -209,7 +209,7 @@ export class Client {
     scopes: string[],
     redirectUri: string,
     state: string = "snoots",
-    temporary: boolean = false
+    temporary: boolean = false,
   ): string {
     const q = new URLSearchParams();
     q.append("client_id", clientId);
@@ -239,7 +239,7 @@ export class Client {
     this: Self,
     options: Required<Omit<ClientOptions, "auth">>,
     code: string,
-    redirectUri: string
+    redirectUri: string,
   ): Promise<InstanceType<Self>> {
     debug("Creating client from auth code '%s'", code);
     if (!options.creds) throw "No creds";
@@ -248,7 +248,7 @@ export class Client {
       code,
       redirectUri,
       options.creds,
-      options.userAgent
+      options.userAgent,
     );
 
     const client = new this(options, gateway);

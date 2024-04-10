@@ -11,6 +11,8 @@ export { Listing } from "./listing/listing";
 export { LockableControls } from "./lockable/controls";
 export type { LockableData } from "./lockable/object";
 export { Lockable } from "./lockable/object";
+export type { FileDetails } from "./mediafile/object";
+export { MediaFile } from "./mediafile/object";
 export { PostControls } from "./post/controls";
 export type { PostData, SuggestedSort } from "./post/object";
 export { Post } from "./post/object";

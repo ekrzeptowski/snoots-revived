@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import express from "express";
-import { Client, Credentials } from "snoots";
+import { Client, Credentials } from "snoots-revived";
 
 const port = 8080;
 const redirectUri = `http://127.0.0.1:${port}/auth`;
@@ -26,7 +26,7 @@ app.get("/login", (_req, res) => {
     ["identity"],
     redirectUri,
     "some-state", // This should be RANDOM and validated in /auth.
-    true
+    true,
   );
 
   res.redirect(uri);
@@ -56,7 +56,7 @@ app.get("/auth", async (req, res) => {
     const client = await Client.fromAuthCode(
       { userAgent, creds },
       code,
-      redirectUri
+      redirectUri,
     );
 
     // Get and display the user's information so we know it worked!

@@ -26,7 +26,6 @@
   "dependencies": {
     "camelcase": "^6.3.0",
     "debug": "^4.3.4",
-    "got-cjs": "^12.5.4",
     "tslib": "^2.6.2",
     "ws": "^8.16.0"
   },

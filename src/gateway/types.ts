@@ -1,7 +1,26 @@
-export type {
-  OptionsOfTextResponseBody as GotOptions,
-  Response as GotResponse,
-} from "got-cjs";
+/**
+ * Options for configuring the Shim.
+ */
+export type ShimOptions = {
+  headers: Record<string, string>;
+  hooks: Record<
+    string,
+    {
+      /**
+       * A function that modifies the response or triggers a retry.
+       * @param response The response object.
+       * @param retry A function that can be called to retry the request.
+       * @returns The modified response object.
+       */
+      (response: Response, retry: () => void): Response;
+    }[]
+  >;
+  followRedirect: boolean;
+  username?: string;
+  password?: string;
+  form?: Record<string, string>;
+  json?: Record<string, string>;
+};
 
 /** The types of values that are allowed in a query. */
 export type QueryValue = string | number | boolean | null | undefined;

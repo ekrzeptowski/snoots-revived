@@ -1,14 +1,11 @@
 import type { Data, Maybe } from "../helper/types";
 import type {
   Auth,
-  GotOptions,
-  GotResponse,
   Query,
   RateLimit,
+  ShimOptions,
   SomeResponse,
 } from "./types";
-
-import got from "got-cjs";
 
 import { makeDebug } from "../helper/debug";
 
@@ -19,12 +16,16 @@ const debug = {
   response: makeDebug("gateway:response"),
 };
 
-function debugRequest(method: string, path: string, options: GotOptions) {
+function debugRequest(
+  method: string,
+  path: string,
+  options: Partial<ShimOptions>,
+) {
   debug.request(
     "Making %s request to path '%s' with options %O",
     method,
     path,
-    options
+    options,
   );
 }
 
@@ -33,7 +34,7 @@ function debugResponse(method: string, path: string, response: unknown) {
     "Got response for %s request to '%s': %O",
     method,
     path,
-    response
+    response,
   );
 }
 // #endregion debug logging
@@ -56,6 +57,18 @@ export abstract class Gateway {
     this.userAgent = userAgent;
   }
 
+  protected buildInput(path: string, query: Query = {}) {
+    const searchParameters = new URLSearchParams({
+      ...query,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      raw_json: "1",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      api_type: "json",
+    });
+    const searchParametersString = searchParameters.toString(); // Convert URLSearchParams to string
+    return new URL(`${path}?${searchParametersString}`, this.endpoint);
+  }
+
   /**
    * Issue a GET request to the Reddit API.
    *
@@ -71,11 +84,18 @@ export abstract class Gateway {
    * @returns The result.
    */
   public async get<T>(path: string, query: Query = {}): Promise<T> {
-    const options = await this.buildOptions(query);
+    const options = await this.buildOptions();
     debugRequest("GET", path, options);
-    const response: T = await got.get(this.mapPath(path), options).json();
-    debugResponse("GET", path, response);
-    return this.unwrap(response);
+    const response = await fetchShim(
+      "get",
+      this.buildInput(this.mapPath(path), query),
+      options,
+    );
+
+    const json = (await response.json()) as T;
+
+    debugResponse("GET", path, json);
+    return this.unwrap(json);
   }
 
   /**
@@ -96,11 +116,14 @@ export abstract class Gateway {
   public async post<T>(
     path: string,
     form: Data,
-    query: Query = {}
+    query: Query = {},
   ): Promise<T> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const formOptions = { form: { api_type: "json", ...form } };
-    return await this.doPost(path, formOptions, query);
+    return await this.doPost(
+      this.buildInput(this.mapPath(path), query).toString(),
+      formOptions,
+    );
   }
 
   /**
@@ -121,11 +144,14 @@ export abstract class Gateway {
   public async postJson<T>(
     path: string,
     json: Data,
-    query: Query = {}
+    query: Query = {},
   ): Promise<T> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const jsonOptions = { json: { api_type: "json", ...json } };
-    return await this.doPost(path, jsonOptions, query);
+    return await this.doPost(
+      this.buildInput(this.mapPath(path), query).toString(),
+      jsonOptions,
+    );
   }
 
   /**
@@ -167,17 +193,14 @@ export abstract class Gateway {
 
   protected abstract auth(): Promise<Maybe<Auth>>;
 
-  protected async doPost<T>(
-    path: string,
-    overrideOptions: GotOptions,
-    query: Query
-  ): Promise<T> {
-    const baseOptions = await this.buildOptions(query);
+  protected async doPost<T>(path: string, overrideOptions: Data): Promise<T> {
+    const baseOptions = await this.buildOptions();
     const options = { ...baseOptions, ...overrideOptions };
     debugRequest("POST", path, options);
-    const response: T = await got.post(this.mapPath(path), options).json();
-    debugResponse("POST", path, response);
-    return this.unwrap(response);
+    const response = await fetchShim("post", new URL(path), options);
+    const json = (await response.json()) as T;
+    debugResponse("POST", path, json);
+    return this.unwrap(json);
   }
 
   protected abstract mapPath(path: string): string;
@@ -207,13 +230,11 @@ export abstract class Gateway {
     }
   }
 
-  protected async buildOptions(query: Query): Promise<GotOptions> {
-    const options: GotOptions = {
-      prefixUrl: this.endpoint,
+  protected async buildOptions() {
+    const options: ShimOptions = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { "user-agent": this.userAgent },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      searchParams: { ...query, raw_json: 1, api_type: "json" },
+
       hooks: {
         afterResponse: [
           r => this.transformRedirect(r),
@@ -225,34 +246,36 @@ export abstract class Gateway {
 
     const auth = await this.auth();
     if (auth) {
-      if ("bearer" in auth) {
-        options.headers!["Authorization"] = `bearer ${auth.bearer}`;
-      } else {
-        options.username = auth.user;
-        options.password = auth.pass;
-      }
+      const authHeader =
+        "bearer" in auth
+          ? `bearer ${auth.bearer}`
+          : `Basic ${Buffer.from(auth.user + ":" + auth.pass).toString("base64")}`;
+      options.headers["Authorization"] = authHeader;
     }
 
     return options;
   }
 
-  protected transformRedirect(response: GotResponse): GotResponse {
-    const { statusCode, headers } = response;
-    if (headers.location && statusCode >= 300 && statusCode < 400) {
-      response.rawBody = Buffer.from(
+  protected transformRedirect(response: Response): Response {
+    const { status, headers } = response;
+    if (headers.get("location") && status >= 300 && status < 400) {
+      const updatedBody = Buffer.from(
         JSON.stringify({
           kind: "snoots_redirect",
-          data: { location: headers.location },
-        })
+          data: { location: headers.get("location") },
+        }),
       );
+      return new Response(updatedBody, response);
     }
     return response;
   }
 
-  protected updateRatelimit(response: GotResponse): GotResponse {
+  protected updateRatelimit(response: Response): Response {
     const { headers } = response;
-    const remain = Number.parseInt(headers["x-ratelimit-remaining"] as string);
-    const reset = Number.parseInt(headers["x-ratelimit-reset"] as string);
+    const remain = Number.parseInt(
+      headers.get("x-ratelimit-remaining") as string,
+    );
+    const reset = Number.parseInt(headers.get("x-ratelimit-reset") as string);
 
     // To prevent race conditions, only update the rate limit if either...
     if (
@@ -267,10 +290,42 @@ export abstract class Gateway {
       debug.general(
         "Updated ratelimit: %d requests remaining, resets at %s",
         this.rateLimit.remaining,
-        new Date(this.rateLimit.reset)
+        new Date(this.rateLimit.reset),
       );
     }
 
     return response;
   }
+}
+async function fetchShim(
+  method: "get" | "post",
+  path: URL,
+  options: ShimOptions,
+) {
+  const data = await fetch(path, {
+    headers: {
+      ...options.headers,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "Content-Type":
+        method === "post"
+          ? options.json
+            ? "application/json"
+            : "application/x-www-form-urlencoded"
+          : undefined,
+    } as HeadersInit,
+    method,
+    redirect: "manual",
+    body:
+      method === "post"
+        ? options.json
+          ? JSON.stringify(options.json)
+          : new URLSearchParams(options.form).toString()
+        : undefined,
+  });
+  if (options.hooks?.afterResponse)
+    for (const hook of options.hooks?.afterResponse ?? [])
+      hook(data, () => {
+        throw new Error("Retry not supported");
+      });
+  return data;
 }

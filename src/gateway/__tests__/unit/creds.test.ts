@@ -44,7 +44,7 @@ describe("CredsGateway", () => {
         .reply(200, { bim: "bom" });
 
       const request = gateway.get("foo/bar", {});
-      await expect(request).resolves.toStrictEqual({ bim: "bom" });
+      await expect(request).resolves.toEqual({ bim: "bom" });
 
       n.done();
     });
@@ -56,8 +56,8 @@ describe("CredsGateway", () => {
           .reply(200, { error: "whoops" });
 
         const request = gateway.get("foo/bar", {});
-        await expect(request).rejects.toStrictEqual(
-          new Error("Reddit returned an error: whoops")
+        await expect(request).rejects.toEqual(
+          new Error("Reddit returned an error: whoops"),
         );
 
         n.done();
@@ -73,8 +73,10 @@ describe("CredsGateway", () => {
           });
 
         const request = gateway.get("foo/bar", {});
-        await expect(request).rejects.toStrictEqual(
-          new Error("Reddit returned an error: whoops: something went wrong :(")
+        await expect(request).rejects.toEqual(
+          new Error(
+            "Reddit returned an error: whoops: something went wrong :(",
+          ),
         );
 
         n.done();
@@ -90,7 +92,7 @@ describe("CredsGateway", () => {
         .post("/foo/bar.json?api_type=json&raw_json=1", expectedBody)
         .reply(200, { bim: "bom" });
 
-      await gateway.post("foo/bar", { bar: "foo" }, {});
+      await gateway.post("foo/bar", { bar: "foo" });
 
       n.done();
     });
@@ -100,8 +102,8 @@ describe("CredsGateway", () => {
         .post("/foo/bar.json?api_type=json&raw_json=1")
         .reply(200, { bim: "bom" });
 
-      const request = gateway.post("foo/bar", { bar: "foo" }, {});
-      await expect(request).resolves.toStrictEqual({ bim: "bom" });
+      const request = gateway.post("foo/bar", { bar: "foo" });
+      await expect(request).resolves.toEqual({ bim: "bom" });
 
       n.done();
     });
@@ -112,9 +114,9 @@ describe("CredsGateway", () => {
           .post("/foo/bar.json?api_type=json&raw_json=1")
           .reply(200, { error: "whoops" });
 
-        const request = gateway.post("foo/bar", { bar: "foo" }, {});
-        await expect(request).rejects.toStrictEqual(
-          new Error("Reddit returned an error: whoops")
+        const request = gateway.post("foo/bar", { bar: "foo" });
+        await expect(request).rejects.toEqual(
+          new Error("Reddit returned an error: whoops"),
         );
 
         n.done();
@@ -129,9 +131,11 @@ describe("CredsGateway", () => {
             error_description: "something went wrong :(",
           });
 
-        const request = gateway.post("foo/bar", { bar: "foo" }, {});
-        await expect(request).rejects.toStrictEqual(
-          new Error("Reddit returned an error: whoops: something went wrong :(")
+        const request = gateway.post("foo/bar", { bar: "foo" });
+        await expect(request).rejects.toEqual(
+          new Error(
+            "Reddit returned an error: whoops: something went wrong :(",
+          ),
         );
 
         n.done();
@@ -158,7 +162,7 @@ describe("CredsGateway", () => {
         .reply(200, { bim: "bom" });
 
       const request = gateway.postJson("foo/bar", { bar: "foo" }, {});
-      await expect(request).resolves.toStrictEqual({ bim: "bom" });
+      await expect(request).resolves.toEqual({ bim: "bom" });
 
       n.done();
     });
@@ -170,8 +174,8 @@ describe("CredsGateway", () => {
           .reply(200, { error: "whoops" });
 
         const request = gateway.postJson("foo/bar", { bar: "foo" }, {});
-        await expect(request).rejects.toStrictEqual(
-          new Error("Reddit returned an error: whoops")
+        await expect(request).rejects.toEqual(
+          new Error("Reddit returned an error: whoops"),
         );
 
         n.done();
@@ -187,8 +191,10 @@ describe("CredsGateway", () => {
           });
 
         const request = gateway.postJson("foo/bar", { bar: "foo" }, {});
-        await expect(request).rejects.toStrictEqual(
-          new Error("Reddit returned an error: whoops: something went wrong :(")
+        await expect(request).rejects.toEqual(
+          new Error(
+            "Reddit returned an error: whoops: something went wrong :(",
+          ),
         );
 
         n.done();

@@ -51,13 +51,13 @@ export abstract class Pager<T> implements Fetcher<T> {
   abstract fetch(context: ListingContext): Promise<Listing<T>>;
 
   protected async nextPage<TPageItems = RedditObject>(
-    context: ListingContext
+    context: ListingContext,
   ): Promise<RedditListing<TPageItems>> {
     if (!context.request) throw "Unable to fetch next page";
     const query = { limit: "100", after: this.after, ...context.request.query };
     const nextListingObject: RedditObject = await context.client.gateway.get(
       context.request.url,
-      query
+      query,
     );
     assertKind("Listing", nextListingObject);
     return nextListingObject.data as RedditListing<TPageItems>;
@@ -152,7 +152,7 @@ export class Listing<T> {
    * @returns A promise that resolves when the listing has been exhausted.
    */
   async eachPage(
-    handler: AwaitableFunction<T[], boolean | void>
+    handler: AwaitableFunction<T[], boolean | void>,
   ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let page: Maybe<Listing<T>> = this;
@@ -237,7 +237,7 @@ export class Listing<T> {
 
   private static async nextPage<T>(
     page: Listing<T>,
-    context: ListingContext
+    context: ListingContext,
   ): Promise<Maybe<Listing<T>>> {
     if (page.next) {
       return page.next;

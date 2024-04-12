@@ -404,7 +404,7 @@ export class Post extends Lockable implements PostData {
   async crosspostTo(
     subreddit: string,
     title: string,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string> {
     return this.controls.crosspostTo(this.id, subreddit, title, options);
   }

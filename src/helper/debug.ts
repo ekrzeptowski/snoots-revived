@@ -1,5 +1,6 @@
 import type { Debugger } from "debug";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import Debug from "debug";
 
 // Boolean formatter
@@ -17,7 +18,7 @@ Debug.formatters.b = v => (v ? "true" : "false");
       "To list all the debug namespaces used set `DEBUG='snoots:debug-namespaces'`",
       "For more information on the debug module see https://npmjs.com/package/debug",
       "Nothing else will be printed to the top-level 'snoots' namespace.",
-    ].join("\n")
+    ].join("\n"),
   );
 }
 

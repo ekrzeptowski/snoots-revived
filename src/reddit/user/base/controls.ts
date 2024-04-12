@@ -64,7 +64,7 @@ export class BaseUserControls extends BaseControls {
    */
   getSortedComments(
     username: string,
-    sort: UserItemsSort = "new"
+    sort: UserItemsSort = "new",
   ): Listing<Comment> {
     const request = { url: `user/${username}/comments`, query: { sort } };
     const context = { request, client: this.client };

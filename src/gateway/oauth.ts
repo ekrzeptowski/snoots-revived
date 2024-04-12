@@ -79,7 +79,7 @@ export class OauthGateway extends Gateway {
     code: string,
     redirectUri: string,
     creds: Credentials,
-    userAgent: string
+    userAgent: string,
   ): Promise<OauthGateway> {
     const gateway = new OauthGateway({ refreshToken: "" }, creds, userAgent);
     await gateway.updateTokenFromGrant({
@@ -127,7 +127,7 @@ export class OauthGateway extends Gateway {
     debug(
       "Checking if token is expired (expires at %d, current time is %d)",
       expiresAt,
-      Date.now()
+      Date.now(),
     );
     if (expiresAt <= Date.now()) {
       await this.updateAccessToken();
@@ -170,7 +170,7 @@ export class OauthGateway extends Gateway {
     debug(
       "Token updated successfully, new token expires at %d and has scopes ['%s']",
       this.token.expiration,
-      this.token.scopes.join("', '")
+      this.token.scopes.join("', '"),
     );
   }
 }

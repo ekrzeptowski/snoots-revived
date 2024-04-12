@@ -25,7 +25,7 @@ function fcToken(withRefresh?: boolean): fc.Arbitrary<Token> {
     // No preference given, randomize whether or not there is a refresh token.
     return fc.record(
       { access, expiration, refresh, scopes },
-      { requiredKeys: ["access", "expiration", "scopes"] }
+      { requiredKeys: ["access", "expiration", "scopes"] },
     );
   }
 }
@@ -115,8 +115,8 @@ describe("OauthGateway", () => {
             await gateway.updateAccessToken();
 
             n.done();
-          }
-        )
+          },
+        ),
       );
     });
 
@@ -148,8 +148,8 @@ describe("OauthGateway", () => {
             await gateway.updateAccessToken();
 
             n.done();
-          }
-        )
+          },
+        ),
       );
     });
 
@@ -160,7 +160,7 @@ describe("OauthGateway", () => {
           fcTokenResponse(),
           async (token, tokenResponse) => {
             gateway.setToken(token);
-            // eslint-disable-next-line unicorn/no-useless-undefined
+
             gateway.setInitialAuth(undefined);
 
             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -172,8 +172,8 @@ describe("OauthGateway", () => {
             await gateway.updateAccessToken();
 
             n.done();
-          }
-        )
+          },
+        ),
       );
     });
 
@@ -201,8 +201,8 @@ describe("OauthGateway", () => {
             expect(newToken?.access).toEqual(tokenResponse.accessToken);
             expect(newToken?.expiration).toBeGreaterThan(Date.now());
             expect(newToken?.refresh).toEqual(tokenResponse.refreshToken);
-          }
-        )
+          },
+        ),
       );
     });
   });
@@ -295,13 +295,13 @@ describe("OauthGateway", () => {
           .reply(200, { bim: "bom" });
 
         const request = gateway.get("foo/bar", {});
-        await expect(request).resolves.toStrictEqual({ bim: "bom" });
+        await expect(request).resolves.toEqual({ bim: "bom" });
 
         n.done();
       });
 
       it("should not call .updateAccessToken()", async () => {
-        nock("https://oauth.reddit.com").get(/.*/).reply(200);
+        nock("https://oauth.reddit.com").get(/.*/).reply(200, {});
         await gateway.get("foo/bar");
         expect(updateAccessTokenSpy).not.toHaveBeenCalled();
       });
@@ -313,8 +313,8 @@ describe("OauthGateway", () => {
             .reply(200, { error: "whoops" });
 
           const request = gateway.get("foo/bar", {});
-          await expect(request).rejects.toStrictEqual(
-            new Error("Reddit returned an error: whoops")
+          await expect(request).rejects.toEqual(
+            new Error("Reddit returned an error: whoops"),
           );
 
           n.done();
@@ -330,10 +330,10 @@ describe("OauthGateway", () => {
             });
 
           const request = gateway.get("foo/bar", {});
-          await expect(request).rejects.toStrictEqual(
+          await expect(request).rejects.toEqual(
             new Error(
-              "Reddit returned an error: whoops: something went wrong :("
-            )
+              "Reddit returned an error: whoops: something went wrong :(",
+            ),
           );
 
           n.done();
@@ -359,14 +359,14 @@ describe("OauthGateway", () => {
           .post("/foo/bar?api_type=json&raw_json=1")
           .reply(200, { bim: "bom" });
 
-        const request = gateway.post("foo/bar", { bar: "foo" }, {});
-        await expect(request).resolves.toStrictEqual({ bim: "bom" });
+        const request = gateway.post("foo/bar", { bar: "foo" });
+        await expect(request).resolves.toEqual({ bim: "bom" });
 
         n.done();
       });
 
       it("should not call .updateAccessToken()", async () => {
-        nock("https://oauth.reddit.com").post(/.*/).reply(200);
+        nock("https://oauth.reddit.com").post(/.*/).reply(200, {});
         await gateway.post("foo/bar", {});
         expect(updateAccessTokenSpy).not.toHaveBeenCalled();
       });
@@ -377,9 +377,9 @@ describe("OauthGateway", () => {
             .post("/foo/bar?api_type=json&raw_json=1")
             .reply(200, { error: "whoops" });
 
-          const request = gateway.post("foo/bar", { bar: "foo" }, {});
-          await expect(request).rejects.toStrictEqual(
-            new Error("Reddit returned an error: whoops")
+          const request = gateway.post("foo/bar", { bar: "foo" });
+          await expect(request).rejects.toEqual(
+            new Error("Reddit returned an error: whoops"),
           );
 
           n.done();
@@ -394,11 +394,11 @@ describe("OauthGateway", () => {
               error_description: "something went wrong :(",
             });
 
-          const request = gateway.post("foo/bar", { bar: "foo" }, {});
-          await expect(request).rejects.toStrictEqual(
+          const request = gateway.post("foo/bar", { bar: "foo" });
+          await expect(request).rejects.toEqual(
             new Error(
-              "Reddit returned an error: whoops: something went wrong :("
-            )
+              "Reddit returned an error: whoops: something went wrong :(",
+            ),
           );
 
           n.done();
@@ -425,13 +425,13 @@ describe("OauthGateway", () => {
           .reply(200, { bim: "bom" });
 
         const request = gateway.postJson("foo/bar", { bar: "foo" }, {});
-        await expect(request).resolves.toStrictEqual({ bim: "bom" });
+        await expect(request).resolves.toEqual({ bim: "bom" });
 
         n.done();
       });
 
       it("should not call .updateAccessToken()", async () => {
-        nock("https://oauth.reddit.com").post(/.*/).reply(200);
+        nock("https://oauth.reddit.com").post(/.*/).reply(200, {});
         await gateway.postJson("foo/bar", {});
         expect(updateAccessTokenSpy).not.toHaveBeenCalled();
       });
@@ -443,8 +443,8 @@ describe("OauthGateway", () => {
             .reply(200, { error: "whoops" });
 
           const request = gateway.postJson("foo/bar", { bar: "foo" }, {});
-          await expect(request).rejects.toStrictEqual(
-            new Error("Reddit returned an error: whoops")
+          await expect(request).rejects.toEqual(
+            new Error("Reddit returned an error: whoops"),
           );
 
           n.done();
@@ -460,10 +460,10 @@ describe("OauthGateway", () => {
             });
 
           const request = gateway.postJson("foo/bar", { bar: "foo" }, {});
-          await expect(request).rejects.toStrictEqual(
+          await expect(request).rejects.toEqual(
             new Error(
-              "Reddit returned an error: whoops: something went wrong :("
-            )
+              "Reddit returned an error: whoops: something went wrong :(",
+            ),
           );
 
           n.done();

@@ -8,21 +8,21 @@ export function emptyRedditListing<TChildren>(): RedditListing<TChildren> {
 
 /** @internal */
 export function fakeListingAfter<TChildren>(
-  after: string
+  after: string,
 ): RedditListing<TChildren> {
   return { after, children: [] };
 }
 
 /** @internal */
 export function fakeListingBefore<TChildren>(
-  before: string
+  before: string,
 ): RedditListing<TChildren> {
   return { before, children: [] };
 }
 
 /** @internal */
 export function fakeMoreListing(
-  name: string
+  name: string,
 ): RedditListing<RedditObject<RedditMore>> {
   const more: RedditMore = {
     count: 0, // TODO

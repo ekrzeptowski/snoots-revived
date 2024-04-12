@@ -23,7 +23,7 @@ export class PostComments implements Fetcher<Comment> {
 
     return new CommentListing(
       childrenResponse[1].data ?? emptyRedditListing(),
-      context
+      context,
     );
   }
 }

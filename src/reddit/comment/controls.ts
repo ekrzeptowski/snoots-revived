@@ -91,7 +91,7 @@ export class CommentControls extends LockableControls {
   protected convertRepliesToListing(
     replies: unknown,
     cmtName: string,
-    postId: string
+    postId: string,
   ): CommentListing {
     const context = { post: postId, client: this.client };
     if (replies === "") {
@@ -103,7 +103,7 @@ export class CommentControls extends LockableControls {
       assertKind("Listing", repliesObject);
       return new CommentListing(
         (repliesObject as RedditObject<RedditObjectListing>).data,
-        context
+        context,
       );
     } else {
       debug("Replies are of unsupported type; %O", replies);

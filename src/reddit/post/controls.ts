@@ -25,7 +25,7 @@ function isRemoved(dat: Data) {
 
 type SplitRawPost = [
   RedditObject<RedditObjectListing>,
-  RedditObject<RedditObjectListing>
+  RedditObject<RedditObjectListing>,
 ];
 
 /**
@@ -76,7 +76,7 @@ export class PostControls extends LockableControls {
     time: TimeRange = "all",
     sort: SearchSort = "new",
     syntax: SearchSyntax = "plain",
-    searchSubredditOnly: boolean = false
+    searchSubredditOnly: boolean = false,
   ): Listing<Post> {
     const options: Query = {
       t: time,
@@ -133,7 +133,7 @@ export class PostControls extends LockableControls {
     id: string,
     subreddit: string,
     title: string,
-    options: LinkPostOptions = {}
+    options: LinkPostOptions = {},
   ): Promise<string> {
     return this.client.subreddits.postCrosspost(subreddit, title, id, options);
   }
@@ -259,7 +259,7 @@ export class PostControls extends LockableControls {
   protected async setStickied(
     id: string,
     state: boolean,
-    slot?: 1 | 2
+    slot?: 1 | 2,
   ): Promise<void> {
     const body = { state, num: slot, id: this.namespace(id) };
     await this.gateway.post("api/set_subreddit_sticky", body);
@@ -296,7 +296,7 @@ export class PostControls extends LockableControls {
   /** @internal */
   fromRaw(
     raw: RedditObject,
-    comments: RedditObjectListing = fakeListingAfter("")
+    comments: RedditObjectListing = fakeListingAfter(""),
   ): Post {
     assertKind("t3", raw);
 

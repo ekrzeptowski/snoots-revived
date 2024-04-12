@@ -1,3 +1,15 @@
+## [1.0.0-dev.4](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2024-04-12)
+
+
+### Features
+
+* replace got with fetch ([c21e309](https://github.com/ekrzeptowski/snoots-revived/commit/c21e3099fe6e072dbe95dfe9137d3f4b243fc56c))
+
+
+### Bug Fixes
+
+* change package import in example ([9adbd8f](https://github.com/ekrzeptowski/snoots-revived/commit/9adbd8f31716cc7ff07b3795a9260092544e0401))
+
 ## [1.0.0-dev.3](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2024-03-14)
 
 

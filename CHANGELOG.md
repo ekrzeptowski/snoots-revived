@@ -1,3 +1,10 @@
+## [1.0.0-dev.5](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2024-04-17)
+
+
+### Bug Fixes
+
+* blob import in subreddit/controls.ts ([3b59083](https://github.com/ekrzeptowski/snoots-revived/commit/3b59083d31a6d3619341bb4ce090e517326ad391))
+
 ## [1.0.0-dev.4](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2024-04-12)
 
 

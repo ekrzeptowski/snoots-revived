@@ -17,9 +17,9 @@ import type { PostRequirements, SubredditData } from "./object";
 import type { FileDetails, SubredditFlair } from "./types";
 
 import * as fs from "fs";
-import { blob } from "node:stream/consumers";
 import path from "path";
 import stream from "stream";
+import { blob } from "stream/consumers";
 
 import { makeDebug } from "../../helper/debug";
 import { BaseControls } from "../base-controls";

@@ -3,8 +3,8 @@ import { Gateway } from "./gateway";
 /** @internal */
 export class AnonGateway extends Gateway {
   /** @internal */
-  constructor(userAgent: string) {
-    super("https://www.reddit.com", userAgent);
+  constructor(userAgent: string, proxyUrl?: string | null) {
+    super("https://www.reddit.com", userAgent, proxyUrl);
   }
 
   protected async auth(): Promise<undefined> {

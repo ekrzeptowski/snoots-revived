@@ -7,6 +7,8 @@ import type {
   SomeResponse,
 } from "./types";
 
+import { socksDispatcher } from "fetch-socks";
+
 import { makeDebug } from "../helper/debug";
 
 // #region debug logging
@@ -50,11 +52,13 @@ export abstract class Gateway {
   protected rateLimit: Maybe<RateLimit>;
   protected userAgent: string;
   protected endpoint: string;
+  protected proxyUrl: string | null | undefined;
 
   /** @internal */
-  constructor(endpoint: string, userAgent: string) {
+  constructor(endpoint: string, userAgent: string, proxyUrl?: string | null) {
     this.endpoint = endpoint;
     this.userAgent = userAgent;
+    this.proxyUrl = proxyUrl;
   }
 
   protected buildInput(path: string, query: Query = {}) {
@@ -231,6 +235,12 @@ export abstract class Gateway {
   }
 
   protected async buildOptions() {
+    const proxyUrlParsed = this.proxyUrl && new URL(this.proxyUrl ?? "");
+    if (proxyUrlParsed && !proxyUrlParsed.protocol.startsWith("socks")) {
+      throw new Error(
+        "Only socks proxies are supported. Provide an URL like 'socks5://",
+      );
+    }
     const options: ShimOptions = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { "user-agent": this.userAgent },
@@ -242,6 +252,15 @@ export abstract class Gateway {
         ],
       },
       followRedirect: false,
+      agent: proxyUrlParsed
+        ? socksDispatcher({
+            host: proxyUrlParsed.hostname,
+            port: Number.parseInt(proxyUrlParsed.port, 10) || 1080,
+            type: proxyUrlParsed.protocol === "socks5:" ? 5 : 4,
+            userId: proxyUrlParsed.username,
+            password: proxyUrlParsed.password,
+          })
+        : undefined,
     };
 
     const auth = await this.auth();
@@ -315,13 +334,14 @@ async function fetchShim(
     } as HeadersInit,
     method,
     redirect: "manual",
+    dispatcher: options.agent,
     body:
       method === "post"
         ? options.json
           ? JSON.stringify(options.json)
           : new URLSearchParams(options.form).toString()
         : undefined,
-  });
+  } as RequestInit);
   if (options.hooks?.afterResponse)
     for (const hook of options.hooks?.afterResponse ?? [])
       hook(data, () => {

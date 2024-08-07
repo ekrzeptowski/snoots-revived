@@ -31,8 +31,8 @@ export class CredsGateway extends Gateway {
   protected creds: Credentials;
 
   /** @internal */
-  constructor(creds: Credentials, userAgent: string) {
-    super("https://www.reddit.com", userAgent);
+  constructor(creds: Credentials, userAgent: string, proxyUrl?: string | null) {
+    super("https://www.reddit.com", userAgent, proxyUrl);
     this.creds = creds;
   }
 

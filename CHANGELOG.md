@@ -1,3 +1,10 @@
+## [1.0.0-dev.6](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.5...v1.0.0-dev.6) (2024-08-07)
+
+
+### Features
+
+* add support for proxy URL in ClientOptions ([b531de7](https://github.com/ekrzeptowski/snoots-revived/commit/b531de7a81f797b37e6bad57eb349db1e56bb4eb))
+
 ## [1.0.0-dev.5](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2024-04-17)
 
 

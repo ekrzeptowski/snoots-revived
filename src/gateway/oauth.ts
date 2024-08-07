@@ -94,8 +94,13 @@ export class OauthGateway extends Gateway {
   }
 
   /** @internal */
-  constructor(auth: Maybe<ClientAuth>, creds: Credentials, userAgent: string) {
-    super("https://oauth.reddit.com", userAgent);
+  constructor(
+    auth: Maybe<ClientAuth>,
+    creds: Credentials,
+    userAgent: string,
+    proxyUrl?: string | null,
+  ) {
+    super("https://oauth.reddit.com", userAgent, proxyUrl);
     this.initialAuth = auth;
     this.creds = creds;
   }

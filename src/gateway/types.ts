@@ -1,3 +1,5 @@
+import type { ProxyAgent } from "undici";
+
 /**
  * Options for configuring the Shim.
  */
@@ -20,6 +22,7 @@ export type ShimOptions = {
   password?: string;
   form?: Record<string, string>;
   json?: Record<string, string>;
+  agent?: ProxyAgent;
 };
 
 /** The types of values that are allowed in a query. */

@@ -63,6 +63,13 @@ export interface ClientOptions {
    * [rls]: https://github.com/reddit-archive/reddit/wiki/api#rules
    */
   userAgent: string;
+
+  /**
+   * URL of the proxy to use for all requests.
+   *
+   * If this is not specified no proxy will be used.
+   */
+  proxyUrl?: string | null;
 }
 
 /**
@@ -174,13 +181,21 @@ export class Client {
       debug("Using given gateway; type = %s", this.gateway.constructor.name);
     } else {
       this.gateway = options.creds
-        ? new OauthGateway(options.auth, options.creds, options.userAgent)
-        : new AnonGateway(options.userAgent);
+        ? new OauthGateway(
+            options.auth,
+            options.creds,
+            options.userAgent,
+            options.proxyUrl,
+          )
+        : new AnonGateway(options.userAgent, options.proxyUrl);
 
       debug(
         "Created Gateway for client; type = %s",
         this.gateway.constructor.name,
       );
+      if (options.proxyUrl) {
+        debug("Using proxy URL = %s", options.proxyUrl);
+      }
     }
 
     // Set up controls after we have initialized the internal state.
@@ -237,7 +252,7 @@ export class Client {
    */
   static async fromAuthCode<Self extends typeof Client>(
     this: Self,
-    options: Required<Omit<ClientOptions, "auth">>,
+    options: Omit<ClientOptions, "auth"> & { creds: Credentials },
     code: string,
     redirectUri: string,
   ): Promise<InstanceType<Self>> {

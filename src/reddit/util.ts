@@ -2,7 +2,6 @@ import type { Data } from "../helper/types";
 import type { RedditObject } from "./types";
 
 import camelCase from "camelcase";
-import ws from "ws";
 
 /**
  * An invalid kind of object
@@ -47,13 +46,6 @@ export function fromRedditData<T>(data: Data): T {
  * @returns `true` if the code is running in a browser, `false` otherwise.
  */
 export const isBrowser = typeof self === "object";
-
-/**
- * The WebSocket constructor to use.
- */
-export const webSocket: typeof self.WebSocket = isBrowser
-  ? self.WebSocket
-  : (ws as never);
 
 /**
  * Format a Reddit ID to remove the prefix.

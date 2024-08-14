@@ -20,6 +20,7 @@ import * as fs from "fs";
 import path from "path";
 import stream from "stream";
 import { blob } from "stream/consumers";
+import webSocket from "ws";
 
 import { makeDebug } from "../../helper/debug";
 import { BaseControls } from "../base-controls";
@@ -32,13 +33,7 @@ import { PostOrCommentListing } from "../post-or-comment/listing";
 import { BannedUserListing } from "../user/moderator-actioned/banned";
 import { ModeratorActionedUserListing } from "../user/moderator-actioned/base";
 import { Moderator } from "../user/moderator-actioned/moderator";
-import {
-  assertKind,
-  formatId,
-  fromRedditData,
-  isBrowser,
-  webSocket,
-} from "../util";
+import { assertKind, formatId, fromRedditData, isBrowser } from "../util";
 import { SubredditListing } from "./listing";
 import { Subreddit } from "./object";
 
@@ -1352,9 +1347,7 @@ export class SubredditControls extends BaseControls {
   ): Promise<string> {
     let ws: InstanceType<typeof webSocket> | undefined;
     if (options.websocketUrl) {
-      ws = (await this.initializeWebSocket(
-        options.websocketUrl,
-      )) as InstanceType<typeof webSocket>;
+      ws = await this.gateway.initializeWebSocket(options.websocketUrl);
     }
 
     debugPost("Posting to %s with options %o", subreddit, options);
@@ -1383,17 +1376,6 @@ export class SubredditControls extends BaseControls {
       `api/v1/${subreddit}/post_requirements`,
     );
     return fromRedditData(raw);
-  }
-
-  private async initializeWebSocket(websocketUrl: string): Promise<unknown> {
-    const ws = new webSocket(websocketUrl);
-    await new Promise((resolve, reject) => {
-      ws.addEventListener("open", resolve);
-      ws.addEventListener("error", () =>
-        reject(new Error("Failed to open websocket")),
-      );
-    });
-    return ws;
   }
 
   private createRequestData(subreddit: string, options: PostOptions): Data {
@@ -1439,7 +1421,9 @@ export class SubredditControls extends BaseControls {
     return request;
   }
 
-  private async handleWebSocketPost(ws: WebSocket): Promise<string> {
+  private async handleWebSocketPost(
+    ws: InstanceType<typeof webSocket>,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         debugPost("Timing out websocket");
@@ -1458,7 +1442,7 @@ export class SubredditControls extends BaseControls {
         );
       }
 
-      ws.addEventListener("message", (event: MessageEvent) => {
+      ws.addEventListener("message", event => {
         try {
           const data = JSON.parse(event.data as string) as {
             type: string;

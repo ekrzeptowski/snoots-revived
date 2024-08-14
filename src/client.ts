@@ -65,7 +65,9 @@ export interface ClientOptions {
   userAgent: string;
 
   /**
-   * URL of the proxy to use for all requests.
+   * URL of the proxy to use for all requests. This should be in the format
+   * `protocol://user:pass@host:port`. User and pass are optional. Only
+   * `socks5` is supported.
    *
    * If this is not specified no proxy will be used.
    */
@@ -128,6 +130,12 @@ export interface ClientOptions {
  * for more details and restrictions.
  * ```ts
  * const client = new Client({ userAgent: '<your user agent>' })
+ * ```
+ *
+ * @example If you want to use a proxy for all requests, you can specify the
+ * `proxyUrl` key.
+ * ```ts
+ * const client = new Client({ userAgent: '<your user agent>', proxyUrl: 'socks5://localhost:9050' })
  * ```
  */
 export class Client {
@@ -247,6 +255,7 @@ export class Client {
    * @param code The OAuth code.
    * @param redirectUri The redirect URI. This ***must*** be the same as the uri
    * given to {@link makeAuthUrl}.
+   * @param proxyUrl The URL of the proxy to use for all requests.
    *
    * @returns A promise that resolves when the authorization is complete.
    */
@@ -264,6 +273,7 @@ export class Client {
       redirectUri,
       options.creds,
       options.userAgent,
+      options.proxyUrl,
     );
 
     const client = new this(options, gateway);

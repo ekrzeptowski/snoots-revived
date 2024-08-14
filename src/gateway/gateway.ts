@@ -8,6 +8,8 @@ import type {
 } from "./types";
 
 import { socksDispatcher } from "fetch-socks";
+import { SocksProxyAgent } from "socks-proxy-agent";
+import webSocket from "ws";
 
 import { makeDebug } from "../helper/debug";
 
@@ -178,7 +180,8 @@ export abstract class Gateway {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           "user-agent": this.userAgent,
         },
-      });
+        agent: this.proxyUrl ? buildAgent(this.proxyUrl) : undefined,
+      } as RequestInit);
       debugResponse("POST", path, response);
       if (response.status === 201) {
         return (await response.text()) as unknown as Response;
@@ -193,6 +196,38 @@ export abstract class Gateway {
   /** @internal */
   public getRateLimit(): Maybe<RateLimit> {
     return this.rateLimit ? { ...this.rateLimit } : undefined;
+  }
+
+  public async initializeWebSocket(websocketUrl: string): Promise<webSocket> {
+    let attempts = 0;
+    const maxAttempts = 2;
+
+    const createWebSocket = async (): Promise<webSocket> => {
+      const ws = new webSocket(websocketUrl, {
+        agent: this.proxyUrl ? new SocksProxyAgent(this.proxyUrl) : undefined,
+      });
+
+      return new Promise<webSocket>((resolve, reject) => {
+        ws.addEventListener("open", () => resolve(ws));
+        // eslint-disable-next-line promise/prefer-await-to-callbacks
+        ws.addEventListener("error", error => reject(error));
+      });
+    };
+    while (attempts < maxAttempts) {
+      try {
+        attempts++;
+        return await createWebSocket(); // If the connection is successful, return the websocket.
+      } catch {
+        if (attempts >= maxAttempts) {
+          throw new Error(
+            `Failed to open websocket after ${attempts} attempts`,
+          );
+        }
+        // Wait 1 second before trying again.
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    throw new Error("Failed to open websocket");
   }
 
   protected abstract auth(): Promise<Maybe<Auth>>;
@@ -235,12 +270,6 @@ export abstract class Gateway {
   }
 
   protected async buildOptions() {
-    const proxyUrlParsed = this.proxyUrl && new URL(this.proxyUrl ?? "");
-    if (proxyUrlParsed && !proxyUrlParsed.protocol.startsWith("socks")) {
-      throw new Error(
-        "Only socks proxies are supported. Provide an URL like 'socks5://",
-      );
-    }
     const options: ShimOptions = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { "user-agent": this.userAgent },
@@ -252,15 +281,7 @@ export abstract class Gateway {
         ],
       },
       followRedirect: false,
-      agent: proxyUrlParsed
-        ? socksDispatcher({
-            host: proxyUrlParsed.hostname,
-            port: Number.parseInt(proxyUrlParsed.port, 10) || 1080,
-            type: proxyUrlParsed.protocol === "socks5:" ? 5 : 4,
-            userId: proxyUrlParsed.username,
-            password: proxyUrlParsed.password,
-          })
-        : undefined,
+      agent: this.proxyUrl ? buildAgent(this.proxyUrl) : undefined,
     };
 
     const auth = await this.auth();
@@ -348,4 +369,20 @@ async function fetchShim(
         throw new Error("Retry not supported");
       });
   return data;
+}
+
+function buildAgent(proxyUrl: string) {
+  const proxyUrlParsed = new URL(proxyUrl);
+  if (!proxyUrlParsed.protocol.startsWith("socks")) {
+    throw new Error(
+      "Only socks proxies are supported. Provide an URL like 'socks5://",
+    );
+  }
+  return socksDispatcher({
+    host: proxyUrlParsed.hostname,
+    port: Number.parseInt(proxyUrlParsed.port, 10) || 1080,
+    type: proxyUrlParsed.protocol === "socks5:" ? 5 : 4,
+    userId: proxyUrlParsed.username,
+    password: proxyUrlParsed.password,
+  });
 }

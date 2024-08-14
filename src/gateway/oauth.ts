@@ -80,8 +80,14 @@ export class OauthGateway extends Gateway {
     redirectUri: string,
     creds: Credentials,
     userAgent: string,
+    proxyUrl?: string | null,
   ): Promise<OauthGateway> {
-    const gateway = new OauthGateway({ refreshToken: "" }, creds, userAgent);
+    const gateway = new OauthGateway(
+      { refreshToken: "" },
+      creds,
+      userAgent,
+      proxyUrl,
+    );
     await gateway.updateTokenFromGrant({
       /* eslint-disable @typescript-eslint/naming-convention */
       grant_type: "authorization_code",
@@ -163,7 +169,11 @@ export class OauthGateway extends Gateway {
 
   private async updateTokenFromGrant(grant: Grant) {
     debug("Updating token with grant %o", grant);
-    const credGate = new CredsGateway(this.creds, this.userAgent);
+    const credGate = new CredsGateway(
+      this.creds,
+      this.userAgent,
+      this.proxyUrl,
+    );
     const raw: Data = await credGate.post("api/v1/access_token", grant);
     const response: TokenResponse = fromRedditData(raw);
     this.token = {

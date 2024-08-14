@@ -1,3 +1,10 @@
+## [1.0.0-dev.7](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2024-08-14)
+
+
+### Bug Fixes
+
+* add missing proxy agent for upload and OauthGateway ([cf35d1b](https://github.com/ekrzeptowski/snoots-revived/commit/cf35d1b09bcc822e64158c2d55bee177558373a1))
+
 ## [1.0.0-dev.6](https://github.com/ekrzeptowski/snoots-revived/compare/v1.0.0-dev.5...v1.0.0-dev.6) (2024-08-07)
 
 
